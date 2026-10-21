@@ -55,8 +55,8 @@ def main():
             last=dest
     fs.append(f"[{last}]drawtext=fontfile={bold}:text='ELIJAH FILM STUDIO':x=32:y=29:fontsize=22:fontcolor=0xffffff,"
               f"drawtext=fontfile={font}:text='ENGINEERING PROOF | NOT PHOTOREAL ACTOR GENERATION':"
-              f"x=32:y=61:fontsize=15:fontcolor=0x9fdfec,fade=t=in:st=0:d=.4,"
-              f"fade=t=out:st=29.5:d=.5[out]")
+              f"x=32:y=61:fontsize=15:fontcolor=0x9fdfec,fade=t=in:st=0:d=0.4,"
+              f"fade=t=out:st=29.5:d=0.5[out]")
     film=o/"studio-authored-30s.mp4"
     cmd+=["-filter_complex",';'.join(fs),"-map","[out]","-map","3:a:0",
          "-t","30","-c:v","libx264","-preset","veryfast","-crf","26",
