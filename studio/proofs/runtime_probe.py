@@ -13,7 +13,7 @@ def req(url):
         except Exception as e:
             last=e;time.sleep((i+1)*2)
     raise RuntimeError(str(last))
-manifest=req("https://raw.githubusercontent.com/zhuyansen/awesome-claude-video-skills/ffdf99cbc7879f611abba186e933695904cd638f/data/skills.json")["skills"]
+manifest=json.loads((Path(__file__).parent/"pinned-original-318.json").read_text())["skills"]
 assert len(manifest)==318 and len({x["repo_full_name"] for x in manifest})==318
 def inspect(x):
     original=x["repo_full_name"];repo="mysticalsin/Motion-graphics-skill" if original=="Miftahul-Islam-Efaz/Motion-graphics-skill" else original
