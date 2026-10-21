@@ -49,3 +49,8 @@ The original `Miftahul-Islam-Efaz/Motion-graphics-skill` URL now returns 404. We
 Do **not** vendor the original protected skill here: its original LICENSE limits redistribution of protected materials. The public repository retains only our independent skills, immutable source identifiers, hash-only verification, and the recovery workflow. Source can be restored reproducibly from the surviving fork at its original commit while that fork remains available, subject to its license. This does not imply a perpetual backup.
 
 The [source recovery issue](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/issues/1) tracks provenance and rights. 318 source snapshots verified does not mean all upstream video-processing workflows were executed.
+
+
+## Actual runtime evidence (Oct 21, 2026)
+
+Verified free-system proofs: [recorded human optical tracking and Blender Cycles rendering](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39670561081), [actual Remotion 4 npm install + real H.264 export](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39669757842), and [all 318 public source trees / manifest audit](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39669103072). The full [Hollywood-realism acceptance ledger](studio/references/REALISM-AND-318-RUNTIME-ACCEPTANCE.md) distinguishes real visual proof from catalog entries. **197 projects advertise install manifests, 303 have code-like files, but individual 318 upstream dependency installations and performance have not been certified.** A 7-second multi-system technical reel was compiled separately; not a Hollywood grade or generated-photoreal-actor proof.
