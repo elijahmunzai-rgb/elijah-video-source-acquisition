@@ -1,0 +1,44 @@
+name: Remotion real Node runtime and encoded output proof
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/proofs/remotion/**'
+      - '.github/workflows/remotion-production-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install actual open-source Remotion animation runtime
+        working-directory: studio/proofs/remotion
+        run: |
+          npm install --no-fund --no-audit
+          npx remotion browser ensure
+          node -e "console.log('remotion package',require('remotion/package.json').version)"
+      - name: Render real Remotion video and measure elapsed wall time
+        working-directory: studio/proofs/remotion
+        run: |
+          mkdir -p proof
+          start=$(date +%s)
+          npm run render
+          end=$(date +%s)
+          printf '{"actual_remotion_runtime_install":true,"remotion_render_finished":true,"elapsed_seconds":%s,"synthetic_actor_proven":false}\n' "$((end-start))" > proof/remotion-result.json
+          ffprobe -v error -show_entries stream=codec_name,width,height -show_entries format=duration,size -of json proof/remotion-proof.mp4
+      - name: Store actual cinematic motion renderer proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remotion-node-runtime-render-proof
+          path: |
+            studio/proofs/remotion/proof/remotion-proof.mp4
+            studio/proofs/remotion/proof/remotion-result.json
+          retention-days: 7
+          if-no-files-found: warn
