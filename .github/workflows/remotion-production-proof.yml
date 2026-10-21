@@ -23,6 +23,10 @@ jobs:
           npm install --no-fund --no-audit
           npx remotion browser ensure
           node -e "console.log('remotion package',require('remotion/package.json').version)"
+      - name: Free FFprobe for output verification
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
       - name: Render real Remotion video and measure elapsed wall time
         working-directory: studio/proofs/remotion
         run: |
