@@ -1,0 +1,12 @@
+name: Film Studio Free Runner Diagnostic
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/film-runner-smoke.yml']
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "GitHub runner operational"
