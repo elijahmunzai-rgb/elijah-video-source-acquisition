@@ -1,0 +1,42 @@
+name: Elijah Film Studio Engine QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/**'
+      - '.github/workflows/studio-engine-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: film-studio-engine-qa-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg git-lfs
+          python -m pip install -r studio/requirements.txt
+      - name: Verify specialist skill file inventory
+        run: |
+          python - <<'PY'
+          import pathlib
+          root=pathlib.Path("studio/skills")
+          skills=sorted(root.glob("*/SKILL.md"))
+          assert len(skills)>=25,(len(skills),skills)
+          for skill in skills:
+              assert skill.read_text(encoding="utf8").startswith("---\nname: "),skill
+          print("verified",len(skills),"specialist skills")
+          PY
+      - name: Test cinematic engines
+        run: python -m unittest discover -s studio/tests -v
+      - name: Test source importer and manifest integrity
+        run: python -m unittest discover -s studio/engine/source_vault/tests -v
