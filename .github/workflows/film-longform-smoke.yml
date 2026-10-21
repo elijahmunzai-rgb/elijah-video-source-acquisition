@@ -1,0 +1,46 @@
+name: Free 30s/120s/600s integrated filmmaking proof
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/proofs/directed_reel.py'
+      - '.github/workflows/film-longform-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  film-encoded:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install FFmpeg and fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+      - name: Retrieve audited actual human, Blender Cycles, and Remotion clips
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p media/human media/blender media/motion
+          gh run download 39670561081 --repo "${{ github.repository }}" --name cc0-human-tracking-quantitative-proof --dir media/human
+          gh run download 39670561081 --repo "${{ github.repository }}" --name blender-pbr-camera-render-proof --dir media/blender
+          gh run download 39669757842 --repo "${{ github.repository }}" --name remotion-node-runtime-render-proof --dir media/motion
+          find media -name '*.mp4' -size +10000c -print
+      - name: Render edited 30-second film and labeled 2/10-minute endurance loops
+        run: |
+          human=$(find media/human -name 'actor-tracking.mp4' -print -quit)
+          blender=$(find media/blender -name '3d-camera.mp4' -print -quit)
+          motion=$(find media/motion -name 'remotion-proof.mp4' -print -quit)
+          test -n "$human" && test -n "$blender" && test -n "$motion"
+          python studio/proofs/directed_reel.py "$human" "$blender" "$motion" deliverables
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-studio-30s-and-labeled-120s-600s-duration-tests
+          path: |
+            deliverables/*.mp4
+            deliverables/verification.json
+          if-no-files-found: warn
+          retention-days: 7
