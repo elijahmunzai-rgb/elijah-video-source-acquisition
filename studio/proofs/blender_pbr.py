@@ -10,7 +10,10 @@ bpy.ops.object.select_all(action="SELECT");bpy.ops.object.delete(use_global=Fals
 s=bpy.context.scene
 s.render.engine="CYCLES"
 s.cycles.device="CPU"
-if s.render.engine=="CYCLES":s.cycles.samples=8
+if s.render.engine=="CYCLES":
+    s.cycles.samples=8
+    s.cycles.use_denoising=False
+    bpy.context.view_layer.cycles.use_denoising=False
 elif hasattr(s,"eevee") and hasattr(s.eevee,"taa_render_samples"):s.eevee.taa_render_samples=16
 s.render.resolution_x=480;s.render.resolution_y=270;s.render.resolution_percentage=100
 s.render.image_settings.file_format="PNG"
