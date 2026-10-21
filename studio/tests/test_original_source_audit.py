@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 import unittest
 import os
-SPEC=importlib.util.spec_from_file_location('sources',str(Path(__file__).parents[1]/'import_verified_sources.py'))
+SPEC=importlib.util.spec_from_file_location('sources',str(Path(__file__).parents[1]/'engine'/'source_vault'/'import_verified_sources.py'))
 M=importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(M)
 class AuditTests(unittest.TestCase):
