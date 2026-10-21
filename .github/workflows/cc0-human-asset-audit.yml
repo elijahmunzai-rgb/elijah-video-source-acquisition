@@ -1,0 +1,28 @@
+name: Official CC0 human base mesh availability and license preflight CPU-only
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/proofs/cc0_human_asset_audit.py'
+      - '.github/workflows/cc0-human-asset-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  asset-preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Download official Blender Studio CC0 human mesh, verify archive, never execute sources
+        run: python studio/proofs/cc0_human_asset_audit.py proof/cc0-human
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: official-CC0-human-3d-base-mesh-download-audit
+          path: proof/cc0-human/cc0-human-asset-audit.json
+          if-no-files-found: warn
+          retention-days: 7
