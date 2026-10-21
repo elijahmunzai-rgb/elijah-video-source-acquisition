@@ -13,7 +13,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageOps
 import numpy as np
 
-MAX_DURATION = 180
+MAX_DURATION = 600
 MAX_SIDE = 2160
 MAX_FPS = 60
 
@@ -53,8 +53,8 @@ def validate(cfg, root):
     if not (128<=w<=MAX_SIDE and 128<=h<=MAX_SIDE and w%2==0 and h%2==0 and 8<=fps<=MAX_FPS and w*h<=2_300_000):
         raise ValueError('Canvas must have even dimensions >=128, <=2160, area <=2.3MP, fps 8..60')
     scenes=cfg.get('scenes',[])
-    if not isinstance(scenes,list) or not scenes or len(scenes)>60:
-        raise ValueError('scenes: 1..60 scenes required')
+    if not isinstance(scenes,list) or not scenes or len(scenes)>100:
+        raise ValueError('scenes: 1..100 scenes required')
     total=0.0
     for si,sc in enumerate(scenes):
         d=sc.get('duration',0)
