@@ -1,0 +1,44 @@
+name: Recover original source 318 exact historical commit
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'film-vault/recover_exact_historical_source.py'
+      - 'film-vault/merge_historical_recovery.py'
+      - '.github/workflows/recover-318-original-source.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  historical-original:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Recover exact historical Git tree, verify every tracked file, never publish upstream code
+        run: |
+          python film-vault/recover_exact_historical_source.py audit/recovery-318-file-inventory.json
+      - name: Download ONLY 522-byte final JSON report from original 317-of-318 run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p audit/previous
+          gh run download 39658143891 --repo "${{ github.repository }}" --name film-source-final-verdict --dir audit/previous
+          test -f audit/previous/FINAL_VERDICT.json
+      - name: Merge proven 317 plus exact 318th historical source
+        run: |
+          python film-vault/merge_historical_recovery.py \
+            audit/previous/FINAL_VERDICT.json \
+            audit/recovery-318-file-inventory.json \
+            audit/FINAL_318_SOURCE_SNAPSHOT_VERDICT.json
+      - name: Publish hash-only audit; absolutely no upstream source files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 318-original-source-recovery-audit-only
+          path: |
+            audit/recovery-318-file-inventory.json
+            audit/FINAL_318_SOURCE_SNAPSHOT_VERDICT.json
+          if-no-files-found: warn
+          retention-days: 30
