@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elijah Film Studio — Control Room (Staging)</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:#080e17;color:#f4f1eb}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -10%,#273d54 0%,transparent 55%),#080e17;min-height:100vh}a{color:#dfbb7e}header{display:flex;align-items:center;justify-content:space-between;gap:20px;border-bottom:1px solid #273445;padding:22px max(24px,calc((100vw - 1140px)/2));flex-wrap:wrap}.brand{font-size:13px;letter-spacing:.23em;font-weight:750}.sub{font-size:12px;color:#a7b6c4;margin-top:7px;letter-spacing:.08em}.status{font-size:12px;padding:8px 13px;border:1px solid #364b58;border-radius:99px;color:#cbd9dd}main{max-width:1140px;padding:48px 24px 100px;margin:auto}.eyebrow{color:#deb67a;font-size:12px;letter-spacing:.21em;text-transform:uppercase;font-weight:700}h1{font-size:clamp(39px,6vw,77px);letter-spacing:-.055em;line-height:1.04;margin:13px 0 20px;max-width:850px}p{color:#a8bac8;line-height:1.65;max-width:740px}.meta{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0}.pill{border:1px solid #304558;padding:11px 15px;border-radius:12px;font-size:13px;color:#d9e0e6}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:26px}.link{display:inline-flex;padding:13px 18px;background:#d0ae77;color:#13100d;text-decoration:none;border-radius:10px;font-weight:750;font-size:14px}.mutedLink{background:#1a2936;color:#e5eff1;border:1px solid #33495a}button{padding:12px 17px;color:#e4eef2;background:#172834;border:1px solid #355063;border-radius:10px;cursor:pointer}.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:23px}.panel{border:1px solid #2a3b4b;background:#101b27cc;border-radius:16px;padding:22px;min-height:133px}.kicker{font-size:12px;color:#d5b178;margin-bottom:13px}.panel h3{margin:0 0 9px;font-size:16px}.panel small{color:#9bb0bf;line-height:1.6}.section{margin:62px 0 14px;display:flex;align-items:center;justify-content:space-between;gap:20px}h2{font-size:25px;margin:0;letter-spacing:-.02em}.run{display:grid;grid-template-columns:1fr auto;gap:10px;padding:17px 4px;border-bottom:1px solid #223140}.run a{text-decoration:none;color:#edf1f2;font-weight:600}.run .detail{color:#91aabc;font-size:12px;margin-top:5px}.state{font-size:12px;border:1px solid #405267;padding:5px 10px;border-radius:7px;white-space:nowrap}.legal{margin-top:42px;font-size:13px;color:#93aabd;border-top:1px solid #243545;padding-top:20px}@media(max-width:820px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding-top:37px}}@media(max-width:480px){.grid{grid-template-columns:1fr}header{padding:20px 24px}.run{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div><div class="brand">ELIJAH FILM STUDIO</div><div class="sub">CONTROL ROOM · STAGING</div></div><div class="status" id="status">Checking public GitHub jobs…</div></header>
+<main>
+  <div class="eyebrow">Film production engineering / zero extra subscription</div>
+  <h1>Your studio.<br>One control room.</h1>
+  <p>Coordinate specialist film-production workers, review storyboard plans, and monitor the free CPU rendering pipeline. This first prototype is read-only and uses public demonstration data only.</p>
+  <div class="meta"><span class="pill">8 specialist worker roles</span><span class="pill">CPU-first</span><span class="pill">No paid AI inference</span><span class="pill">No client uploads</span></div>
+  <div class="actions">
+    <a class="link" href="https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/workflows/film-studio-agents.yml" target="_blank" rel="noopener noreferrer">Open GitHub Agent Console ↗</a>
+    <a class="link mutedLink" href="https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition" target="_blank" rel="noopener noreferrer">Production Repository ↗</a>
+  </div>
+  <div class="section"><h2>Production team</h2><div class="eyebrow">Eight specialized workers</div></div>
+  <div class="grid">
+    <div class="panel"><div class="kicker">01 / Direction</div><h3>Creative Director</h3><small>Shot map, timing and visual intention</small></div>
+    <div class="panel"><div class="kicker">02 / Story</div><h3>Screenwriter</h3><small>Beats, scripts, continuity prompts</small></div>
+    <div class="panel"><div class="kicker">03 / Planning</div><h3>Storyboard Artist</h3><small>Shot-by-shot sequencing and reviews</small></div>
+    <div class="panel"><div class="kicker">04 / Compliance</div><h3>Asset Rights</h3><small>Licensing and talent consent gates</small></div>
+    <div class="panel"><div class="kicker">05 / Visual</div><h3>Camera & VFX</h3><small>3D direction, tracked visual effects</small></div>
+    <div class="panel"><div class="kicker">06 / Animation</div><h3>Motion Studio</h3><small>CPU-based graphics and short previews</small></div>
+    <div class="panel"><div class="kicker">07 / Sound</div><h3>Audio Director</h3><small>Narration, sound and approved music</small></div>
+    <div class="panel"><div class="kicker">08 / Delivery</div><h3>Quality Supervisor</h3><small>FFprobe checks and human release gate</small></div>
+  </div>
+  <div class="section"><h2>Recent production runs</h2><button type="button" id="refresh">Refresh status</button></div>
+  <div id="runs" aria-live="polite"><p>Loading latest public runs…</p></div>
+  <div class="legal"><strong>Staging preview — not production deployment.</strong> No video render happens on Hostinger. GitHub executes disposable, approved public-demo CPU jobs. Confidential film briefs, private footage and real client information must not be sent to this public GitHub workflow.</div>
+</main>
+<script>
+const root=document.querySelector('#runs'),status=document.querySelector('#status');
+async function refresh(){
+ status.textContent='Checking public GitHub jobs…';
+ try{
+  const r=await fetch('/api/status',{cache:'no-store'});
+  if(!r.ok)throw Error('Service unavailable');
+  const d=await r.json();
+  status.textContent='GitHub status connected';
+  root.replaceChildren();
+  if(!d.runs.length){const p=document.createElement('p');p.textContent='No recent public runs.';root.append(p);return;}
+  for(const run of d.runs){
+   const row=document.createElement('div');row.className='run';
+   const title=document.createElement('div');
+   const a=document.createElement('a');
+   a.textContent=run.name;
+   a.href=run.url || d.actions_url;
+   a.rel='noopener noreferrer';a.target='_blank';
+   const sub=document.createElement('div');sub.className='detail';
+   sub.textContent=run.updated_at ? new Date(run.updated_at).toLocaleString() : 'No timestamp';
+   title.append(a,sub);
+   const state=document.createElement('span');state.className='state';
+   state.textContent=run.conclusion || run.status;
+   row.append(title,state);root.append(row);
+  }
+ }catch{status.textContent='GitHub status unavailable';root.replaceChildren();
+ const p=document.createElement('p');p.textContent='Public status could not be loaded. You can still open the GitHub Agent Console above.';root.append(p);}
+}
+document.querySelector('#refresh').addEventListener('click',refresh);refresh();
+</script>
+</body></html>

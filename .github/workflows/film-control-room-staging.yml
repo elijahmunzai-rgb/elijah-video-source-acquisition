@@ -1,0 +1,31 @@
+name: Film Studio Hostinger Control Room - staging QA
+on:
+  push:
+    branches: [studio-control-room-staging-20261022]
+    paths:
+      - 'studio/control-room/**'
+      - '.github/workflows/film-control-room-staging.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test secure read-only control room
+        working-directory: studio/control-room
+        run: npm test
+      - name: Verify server can start without credentials
+        working-directory: studio/control-room
+        run: |
+          PORT=3081 node server.mjs > /tmp/studio-control.log 2>&1 &
+          pid=$!
+          sleep 2
+          curl --fail --silent http://127.0.0.1:3081/healthz
+          curl --fail --silent http://127.0.0.1:3081/ | grep -q 'ELIJAH FILM STUDIO'
+          kill "$pid"

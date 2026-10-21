@@ -1,0 +1,14 @@
+{
+  "name": "elijah-film-studio-control-room",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Read-only safe public demo dashboard; no client actions or GitHub write token",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test test/*.test.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
