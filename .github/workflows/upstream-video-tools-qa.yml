@@ -1,0 +1,51 @@
+name: Execute additional vetted original upstream video tool unit tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upstream-video-tools-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  reel-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exact upstream MIT source, no private tokens, no Grok calls
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/AsadMoulviDev/reel-video.git source
+          cd source
+          git checkout --detach 39a5ea97e81994bbaa0a546fc85fd7668f012890
+          test "$(git rev-parse HEAD)" = 39a5ea97e81994bbaa0a546fc85fd7668f012890
+      - name: Install Node tooling WITHOUT package lifecycle scripts
+        working-directory: source
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Original offline unit tests (not video-provider inference)
+        working-directory: source
+        run: npm test
+  lottie:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Exact upstream MIT source, no scripts executed on install
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/diffusionstudio/lottie.git source
+          cd source
+          git checkout --detach 3c72912fad543897f90045ed4d355813837927fc
+          test "$(git rev-parse HEAD)" = 3c72912fad543897f90045ed4d355813837927fc
+      - name: Original offline unicode text-slot tests
+        working-directory: source
+        run: node --experimental-strip-types --test scripts/text-slot-unicode.test.mjs
