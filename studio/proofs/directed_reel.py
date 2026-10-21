@@ -19,7 +19,7 @@ def main():
     sound=o/"original_synthesized_music.wav"
     run(["ffmpeg","-hide_banner","-loglevel","error","-y","-f","lavfi","-i",
        "aevalsrc=0.14*sin(2*PI*110*t)+0.06*sin(2*PI*165*t)+0.045*sin(2*PI*220*t):s=48000:d=30",
-       "-af","afade=t=in:st=0:d=.5,afade=t=out:st=29.2:d=.8","-ac","2",str(sound)])
+       "-af","afade=t=in:st=0:d=0.5,afade=t=out:st=29.2:d=0.8","-ac","2",str(sound)])
     seq=["motion","human","3d","human","motion","3d","human","3d","human","motion"]
     titles=["THE INTENT","REAL HUMAN FOOTAGE","PHYSICAL 3D WORLD","TRACKING THE FRAME",
         "MOTION AS LANGUAGE","CAMERA AND DEPTH","SOURCE TRUTH","RAY-TRACED LIGHT",
