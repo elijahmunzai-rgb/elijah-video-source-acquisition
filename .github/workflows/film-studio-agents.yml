@@ -1,0 +1,88 @@
+name: Free CPU Film Studio - Eight Agent Team
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/agents/**'
+      - 'studio/tests/test_film_agents.py'
+      - '.github/workflows/film-studio-agents.yml'
+  workflow_dispatch:
+    inputs:
+      title:
+        description: Public non-confidential demo title
+        required: true
+        default: A NEW FRAME
+        type: string
+      goal:
+        description: Public demo goal, no client data
+        required: true
+        default: Test free CPU film production
+        type: string
+      duration:
+        description: Plan duration; only 6s preview rendered
+        required: true
+        default: '30'
+        type: choice
+        options: ['15', '30', '60', '120', '600']
+      aspect:
+        description: Video aspect ratio
+        required: true
+        default: landscape
+        type: choice
+        options: [landscape, portrait, square]
+permissions:
+  contents: read
+concurrency:
+  group: film-agent-team-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  agent-team:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PUBLIC_TITLE: ${{ inputs.title || 'A NEW FRAME' }}
+      PUBLIC_GOAL: ${{ inputs.goal || 'Test free CPU film production' }}
+      PLAN_DURATION: ${{ inputs.duration || '30' }}
+      PLAN_ASPECT: ${{ inputs.aspect || 'landscape' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test eight agents, source-rights gate and deterministic output
+        run: python -m unittest discover -s studio/tests -p test_film_agents.py -v
+      - name: Produce shot plan, storyboard, camera, audio, release QA handoffs
+        run: |
+          python studio/agents/pipeline.py --title "$PUBLIC_TITLE" \
+            --goal "$PUBLIC_GOAL" --duration "$PLAN_DURATION" \
+            --aspect "$PLAN_ASPECT" --public-demo --output agent-artifacts
+      - name: Install free CPU-only renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install -r studio/requirements.txt
+      - name: Render real six-second H264 MP4 from Motion Agent
+        run: |
+          python studio/engine/render.py --validate agent-artifacts/motion-preview.json
+          python studio/engine/render.py agent-artifacts/motion-preview.json agent-artifacts/preview-6s.mp4
+          python - <<'PY'
+          import json,subprocess,pathlib
+          root=pathlib.Path("agent-artifacts")
+          media=root/"preview-6s.mp4"
+          assert media.is_file() and media.stat().st_size>5000
+          output=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_format","-show_streams","-of","json",str(media)]))
+          stream=next(s for s in output["streams"] if s["codec_type"]=="video")
+          assert stream["codec_name"]=="h264"
+          assert abs(float(output["format"]["duration"])-6)<.10
+          qa=json.loads((root/"qa.json").read_text())
+          assert qa["preflight"] and not qa["public_publish_approved"]
+          print("PASS: eight role agents; six-second MP4; publication blocked")
+          PY
+      - name: Deliver public demo planning files and preview, no publishing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: public-demo-studio-agents-storyboard-preview
+          path: agent-artifacts/
+          if-no-files-found: warn
+          retention-days: 7
