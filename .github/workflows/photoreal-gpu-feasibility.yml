@@ -1,0 +1,53 @@
+name: Photoreal synthetic-actor inference hardware feasibility
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/photoreal-gpu-feasibility.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hardware:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Measure actual free-host GPU, memory and model readiness without any paid service
+        run: |
+          mkdir -p proof
+          python - <<'PY'
+          import os,sys,json,subprocess,pathlib,platform
+          gpu_files=sorted(str(x) for x in pathlib.Path('/dev').glob('nvidia[0-9]*'))
+          try:
+              p=subprocess.run(['nvidia-smi','--query-gpu=name,memory.total','--format=csv,noheader'],capture_output=True,text=True,timeout=10)
+              devices=[x.strip() for x in p.stdout.splitlines() if x.strip()] if p.returncode==0 else []
+          except (FileNotFoundError,subprocess.TimeoutExpired):devices=[]
+          mem_kb={}
+          for ln in pathlib.Path('/proc/meminfo').read_text().splitlines():
+              if ':' in ln:
+                  a,b=ln.split(':',1)
+                  if a in ('MemTotal','MemAvailable'):mem_kb[a]=int(b.strip().split()[0])
+          result={'host':'GitHub-hosted ubuntu-latest public-free runner','linux':platform.platform(),
+            'cpu_count':os.cpu_count(),'memory_total_GiB':round(mem_kb.get('MemTotal',0)/1048576,2),
+            'memory_available_GiB':round(mem_kb.get('MemAvailable',0)/1048576,2),
+            'nvidia_visible_devices':gpu_files,'nvidia_smi_gpu_list':devices,
+            'cuda_gpu_present':bool(gpu_files or devices),
+            'open_text_to_video_model_weights_present':False,
+            'synthetic_photoreal_actor_video_inference_tested':False,
+            'photoreal_actor_model_usable_on_this_runner':False,
+            'no_paid_compute_used':True,
+            'interpretation':'Without accessible compatible GPU and model weights, cannot claim synthetic photoreal actor generations. Filmed actors and CPU 3D are distinct.'}
+          if result['cuda_gpu_present']:
+              result['photoreal_actor_model_usable_on_this_runner']='Requires independent VRAM, installed weights and runtime checks'
+          pathlib.Path('proof/hardware-report.json').write_text(json.dumps(result,indent=2))
+          print(json.dumps(result,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: free-gpu-photoreal-actor-hardware-audit
+          path: proof/hardware-report.json
+          retention-days: 7
