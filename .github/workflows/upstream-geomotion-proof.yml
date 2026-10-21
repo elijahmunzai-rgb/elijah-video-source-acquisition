@@ -1,0 +1,44 @@
+name: Verify an actual audited upstream video/motion engine - geomotion
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/upstream-geomotion-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  geomotion-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Clone pinned MIT licensed original without credentials
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/hacimertgokhan/geomotion.git upstream-geomotion
+          cd upstream-geomotion
+          git checkout --detach 88c1c1c4f8946309f961ef6e7983171da7a95d07
+          test "$(git rev-parse HEAD)" = "88c1c1c4f8946309f961ef6e7983171da7a95d07"
+          test ! -d node_modules
+      - name: Original zero-dependency Node test suite
+        working-directory: upstream-geomotion
+        run: node --test test/core.test.js
+      - name: Render original SVG and Lottie without hosted models
+        working-directory: upstream-geomotion
+        run: |
+          node src/node/cli.js render sunrise --formats svg,lottie --out ../upstream-proof
+          test -n "$(find ../upstream-proof -type f -name '*.svg' -size +0c -print -quit)"
+          test -n "$(find ../upstream-proof -type f -name '*.json' -size +0c -print -quit)"
+          node -e "const fs=require('node:fs');const p=fs.readdirSync('../upstream-proof');console.log(JSON.stringify({repo:'hacimertgokhan/geomotion',commit:'88c1c1c4f8946309f961ef6e7983171da7a95d07',render_artifacts:p,original_runtime_executed:true,photoreal_actor_generated:false}))"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: original-upstream-geomotion-runtime-proof
+          path: upstream-proof/
+          if-no-files-found: warn
+          retention-days: 7
