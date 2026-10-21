@@ -1,7 +1,7 @@
 name: Film Studio 318 Original Source Acquisition
 on:
   push:
-    branches: [video-source-acquisition-sandbox-20261021]
+    branches: [main]
     paths:
       - '.github/workflows/film-source-318.yml'
   workflow_dispatch:
