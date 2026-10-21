@@ -36,6 +36,31 @@ jobs:
               assert skill.read_text(encoding="utf8").startswith("---\nname: "),skill
           print("verified",len(skills),"specialist skills")
           PY
+      - name: Render and inspect a real MP4, not just validate source
+        run: |
+          python - <<'PY'
+          import json,subprocess,tempfile,pathlib
+          with tempfile.TemporaryDirectory() as work:
+              root=pathlib.Path(work)
+              spec={"canvas":{"width":640,"height":360,"fps":24},
+                    "theme":{"background":"#0B1422","accent":"#C9AB69"},
+                    "scenes":[{"duration":1.5,"layers":[
+                       {"type":"text","text":"ELIJAH FILM STUDIO","x":0.5,"y":0.45,"size":42,
+                        "animation":{"in":"rise","out":"none"}},
+                       {"type":"orbit","x":0.5,"y":0.6,"r":0.13,"speed":0.5,
+                        "animation":{"in":"pop","out":"none"}}]}]}
+              source=root/"smoke.json";output=root/"smoke.mp4"
+              source.write_text(json.dumps(spec),encoding="utf8")
+              subprocess.run(["python","studio/engine/render.py",str(source),str(output)],check=True)
+              assert output.is_file() and output.stat().st_size>5000,output
+              p=subprocess.check_output(["ffprobe","-v","error","-show_streams","-show_format","-of","json",str(output)])
+              info=json.loads(p)
+              video=next(s for s in info["streams"] if s["codec_type"]=="video")
+              assert video["codec_name"]=="h264",video
+              assert (video["width"],video["height"])==(640,360),video
+              assert 1.45<=float(info["format"]["duration"])<=1.60,info
+              print("PASS actual rendered MP4: H.264, 640x360, 24fps, 1.5s",output.stat().st_size,"bytes")
+          PY
       - name: Test cinematic engines
         run: python -m unittest discover -s studio/tests -v
       - name: Test source importer and manifest integrity
