@@ -1,0 +1,51 @@
+name: Inspect all 318 third-party runtimes without executing unknown code
+on:
+  push:
+    branches: [main]
+    paths: ['studio/proofs/runtime_*', '.github/workflows/film-318-readiness.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Read only official GitHub API metadata, no upstream execution
+        env:
+          GITHUB_TOKEN: \${{ github.token }}
+        run: python studio/proofs/runtime_probe.py --shard \${{ matrix.shard }} --out catalog.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: catalog-\${{ matrix.shard }}
+          path: catalog.json
+          retention-days: 7
+          if-no-files-found: warn
+  reconcile:
+    needs: inspect
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: catalog-*
+          path: audit
+      - run: python studio/proofs/runtime_merge.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: all-318-upstream-runtime-readiness
+          path: audit/summary-318.json
+          if-no-files-found: warn
+          retention-days: 7
