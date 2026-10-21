@@ -1,0 +1,71 @@
+name: Free filmmaking evidence - real actor footage and 3D PBR
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/proofs/**'
+      - '.github/workflows/film-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  human-tracking:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Free OpenCV and ffmpeg
+        run: |
+          python -m pip install 'opencv-python-headless>=4.9,<5' 'numpy>=1.24,<3'
+          ffmpeg -version | head -1
+      - name: Obtain CC0 prerecorded human sample, not a synthetic actor
+        run: |
+          mkdir -p proof
+          curl -L --fail --retry 3 --max-time 120 -sS \
+            'https://commons.wikimedia.org/wiki/Special:Redirect/file/Tarun_speaking_01.webm' \
+            -o proof/cc0-real-human.webm
+          test "$(wc -c < proof/cc0-real-human.webm)" -gt 100000
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 proof/cc0-real-human.webm
+      - name: Optical-flow motion/face-tracking quantitative proof and MP4
+        run: |
+          python studio/proofs/actor_tracking.py proof/cc0-real-human.webm proof/actor-tracking.mp4 proof/actor-report.json
+      - name: Preserve playable evaluation proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cc0-human-tracking-quantitative-proof
+          path: |
+            proof/actor-tracking.mp4
+            proof/actor-report.json
+          if-no-files-found: warn
+          retention-days: 7
+  3d-physical-scene:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Blender on free Ubuntu runner
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender ffmpeg
+          blender --version | head -2
+      - name: Physically based 3D scene, real animated camera, rendered frames
+        run: |
+          mkdir -p proof/3d-frames
+          blender -b -t 2 --python studio/proofs/blender_pbr.py -- proof/3d-frames
+          test "$(find proof/3d-frames -name '*.png' | wc -l)" -eq 8
+          ffmpeg -hide_banner -loglevel error -y -framerate 8 -i proof/3d-frames/%04d.png -c:v libx264 -pix_fmt yuv420p -crf 19 proof/3d-camera.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames -of json proof/3d-camera.mp4
+      - name: Preserve rendered 3D and camera benchmark
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blender-pbr-camera-render-proof
+          path: |
+            proof/3d-camera.mp4
+            proof/blender-pbr-report.json
+          if-no-files-found: warn
+          retention-days: 7
