@@ -8,11 +8,9 @@ out=Path(args[0] if args else "proof/3d-frames")
 out.mkdir(parents=True,exist_ok=True)
 bpy.ops.object.select_all(action="SELECT");bpy.ops.object.delete(use_global=False)
 s=bpy.context.scene
-for x in ["BLENDER_EEVEE_NEXT","BLENDER_EEVEE","CYCLES"]:
-    try:s.render.engine=x;break
-    except TypeError:continue
-else:raise RuntimeError("No Blender renderer")
-if s.render.engine=="CYCLES":s.cycles.samples=10
+s.render.engine="CYCLES"
+s.cycles.device="CPU"
+if s.render.engine=="CYCLES":s.cycles.samples=8
 elif hasattr(s,"eevee") and hasattr(s.eevee,"taa_render_samples"):s.eevee.taa_render_samples=16
 s.render.resolution_x=480;s.render.resolution_y=270;s.render.resolution_percentage=100
 s.render.image_settings.file_format="PNG"
