@@ -1,0 +1,64 @@
+name: Film Studio 318 Original Source Acquisition
+on:
+  push:
+    branches: [video-source-acquisition-sandbox-20261021]
+    paths:
+      - '.github/workflows/film-source-318.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        shard: [0,1,2,3,4,5,6,7,8,9]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install git-lfs
+        run: |
+          git lfs version
+          git lfs install --local
+      - name: Download original sources and verify every tracked file
+        run: python film-vault/import_sources.py --shard-index ${{ matrix.shard }} --shard-count 10 --workers 2 --retries 4 --output output
+      - name: Package repository source trees and checksums
+        if: always()
+        run: |
+          if [ -d output/checkouts ]; then
+            tar --exclude-vcs -czf "source-shard-${{ matrix.shard }}.tar.gz" -C output checkouts inventories
+          fi
+      - name: Store complete source archive and audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-shard-${{ matrix.shard }}
+          path: |
+            source-shard-${{ matrix.shard }}.tar.gz
+            output/results.json
+            output/summary.json
+            output/manifest.frozen.json
+          retention-days: 30
+  verify:
+    if: always()
+    needs: [acquire]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: source-shard-*
+          path: audit
+      - name: Verify manifest matches all 318 source repositories
+        run: python film-vault/verify_sources.py audit
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: film-source-final-verdict
+          path: audit/FINAL_VERDICT.json
+          retention-days: 30
