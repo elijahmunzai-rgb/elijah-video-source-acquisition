@@ -54,8 +54,9 @@ def build_command(a):
         names[role] = role
     if a.voice and a.music:
         # Duck music *in reaction to speech*, not with fixed generic volume alone.
-        parts.append('[music][voice]sidechaincompress=threshold=0.025:ratio=9:attack=15:release=320[duck]')
-        parts.append('[voice][duck]amix=inputs=2:normalize=0:duration=longest[main]')
+        parts.append('[voice]asplit=2[voice_mix][voice_sidechain]')
+        parts.append('[music][voice_sidechain]sidechaincompress=threshold=0.025:ratio=9:attack=15:release=320[duck]')
+        parts.append('[voice_mix][duck]amix=inputs=2:normalize=0:duration=longest[main]')
         main = 'main'
     elif a.voice: main = 'voice'
     else: main = 'music'
