@@ -11,11 +11,11 @@ s=bpy.context.scene
 s.render.engine="CYCLES"
 s.cycles.device="CPU"
 if s.render.engine=="CYCLES":
-    s.cycles.samples=8
+    s.cycles.samples=16
     s.cycles.use_denoising=False
     bpy.context.view_layer.cycles.use_denoising=False
 elif hasattr(s,"eevee") and hasattr(s.eevee,"taa_render_samples"):s.eevee.taa_render_samples=16
-s.render.resolution_x=480;s.render.resolution_y=270;s.render.resolution_percentage=100
+s.render.resolution_x=640;s.render.resolution_y=360;s.render.resolution_percentage=100
 s.render.image_settings.file_format="PNG"
 s.world=bpy.data.worlds.new("Cinematic studio");s.world.use_nodes=True
 s.world.node_tree.nodes["Background"].inputs["Color"].default_value=(.03,.055,.08,1)
@@ -53,15 +53,15 @@ data=bpy.data.cameras.new("Real camera");cam=bpy.data.objects.new("Real camera",
 bpy.context.collection.objects.link(cam);s.camera=cam;data.lens=58
 data.dof.use_dof=True;data.dof.focus_object=box;data.dof.aperture_fstop=5.6
 track=[]
-for i in range(8):
-    t=i/7;cam.location=(3.6*math.cos(.4+t*.45),-4.8*math.sin(.62+t*.32),2.0+t*.22)
+for i in range(24):
+    t=i/23;cam.location=(3.6*math.cos(.4+t*.45),-4.8*math.sin(.62+t*.32),2.0+t*.22)
     cam.rotation_euler=(Vector((0,0,.16))-cam.location).to_track_quat("-Z","Y").to_euler()
     ring.rotation_euler[2]=.26+t*.24
     s.frame_set(i+1);s.render.filepath=str(out/f"{i:04d}.png")
     bpy.ops.render.render(write_still=True)
     track.append({"frame":i,"camera_xyz":[float(round(x,4)) for x in cam.location]})
-report={"renderer":s.render.engine,"blender_version":bpy.app.version_string,"width":480,
-"height":270,"rendered_frames":8,"pbr_materials":4,"area_lights":3,
+report={"renderer":s.render.engine,"blender_version":bpy.app.version_string,"width":640,
+"height":360,"rendered_frames":24,"pbr_materials":4,"area_lights":3,
 "camera_motion":track,"actual_3d_render":True,"photoreal_human_verified":False,
 "hollywood_photoreal_quality_verified":False}
 (out.parent/"blender-pbr-report.json").write_text(json.dumps(report,indent=2))
