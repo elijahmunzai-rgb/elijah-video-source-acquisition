@@ -1,0 +1,44 @@
+name: CPU-only model-weight-free animated character and real Cycles rendering
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/proofs/cpu_only_character.py'
+      - '.github/workflows/cpu-only-human.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-character:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install no-GPU free Blender and encoder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y blender ffmpeg libegl1
+      - name: Generate and physically render an articulated actor only with Python geometry
+        run: |
+          mkdir -p proof/cpu-character/frames
+          blender -b -t 2 --python studio/proofs/cpu_only_character.py -- proof/cpu-character/frames
+          test "$(find proof/cpu-character/frames -name '*.png' | wc -l)" -eq 18
+          ffmpeg -y -hide_banner -loglevel error -framerate 9 -i proof/cpu-character/frames/%04d.png -c:v libx264 -pix_fmt yuv420p -crf 22 proof/cpu-character/actor-CPU-no-weights.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height,duration -of json proof/cpu-character/actor-CPU-no-weights.mp4
+          python - <<'PY'
+          import json,pathlib
+          p=json.loads(pathlib.Path("proof/cpu-character/actor-cpu-report.json").read_text())
+          assert p["frames_rendered"]==18 and p["render_device"]=="CPU" and p["ai_model_weight_bytes"]==0
+          assert p["actual_character_geometry"] and p["articulated_arm_animation"] and p["keyframed_camera"]
+          assert pathlib.Path("proof/cpu-character/actor-CPU-no-weights.mp4").stat().st_size>10000
+          print("PASS CPU ONLY NO AI MODEL WEIGHTS OR GPU",p["render_elapsed_seconds"])
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: CPU-only-digital-actor-animated-model-free-proof
+          path: |
+            proof/cpu-character/actor-CPU-no-weights.mp4
+            proof/cpu-character/actor-cpu-report.json
+          if-no-files-found: warn
+          retention-days: 7
