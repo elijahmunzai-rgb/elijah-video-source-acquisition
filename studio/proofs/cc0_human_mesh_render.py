@@ -20,7 +20,7 @@ if not allobjects:raise RuntimeError("No available mesh objects in official huma
 ranking=sorted(allobjects,key=lambda o:len(o.data.vertices),reverse=True)
 # The largest by polygon count will often be a full human body; validate and report
 # rather than claiming full human anatomy without visual inspection.
-candidate=ranking[0]
+candidate=next((obj for obj in ranking if obj.name=="GEO-body_male_realistic"),ranking[0])
 if len(candidate.data.vertices)<1000:raise RuntimeError("Not a production-resolution base mesh")
 bpy.context.collection.objects.link(candidate)
 candidate.parent=None
