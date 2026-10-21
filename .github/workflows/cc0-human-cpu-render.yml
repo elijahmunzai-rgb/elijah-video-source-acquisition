@@ -1,0 +1,64 @@
+name: Render official Blender CC0 human geometry on CPU (no generative weights)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/proofs/cc0_human_mesh_render.py'
+      - '.github/workflows/cc0-human-cpu-render.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  official-human:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download official Blender 4.5.14 LTS release (no paid software)
+        run: |
+          curl --fail --location --retry 3 --max-time 340 \
+            'https://download.blender.org/release/Blender4.5/blender-4.5.14-linux-x64.tar.xz' \
+            -o /tmp/blender-4.5.14-linux-x64.tar.xz
+          test "$(stat -c %s /tmp/blender-4.5.14-linux-x64.tar.xz)" -gt 300000000
+          tar -xf /tmp/blender-4.5.14-linux-x64.tar.xz
+          rm /tmp/blender-4.5.14-linux-x64.tar.xz
+          ./blender-4.5.14-linux-x64/blender -b --factory-startup -t 2 --version | head -3
+      - name: Download verified CC0 human mesh asset from official Blender
+        run: |
+          curl --fail --location --retry 3 --max-time 180 \
+            'https://mirror.blender.org/demo/asset-bundles/human-base-meshes/human-base-meshes-bundle-v1.4.1.zip' \
+            -o /tmp/cc0-human-mesh.zip
+          echo '811f43accbb31a88266d932f8f5563b2d13586fca0ba2693aad1f5fe582b3515  /tmp/cc0-human-mesh.zip' | sha256sum -c
+          mkdir -p cc0-assets
+          python - <<'PY'
+          import zipfile,pathlib
+          z=zipfile.ZipFile("/tmp/cc0-human-mesh.zip")
+          wanted=[n for n in z.namelist() if n.endswith("/human_base_meshes_bundle.blend")]
+          assert len(wanted)==1
+          # Only the vetted binary blend, no code/assets added to public git.
+          with z.open(wanted[0]) as source,open("cc0-assets/base.blend","wb") as sink:
+              while p:=source.read(1024*1024):sink.write(p)
+          assert pathlib.Path("cc0-assets/base.blend").stat().st_size>10000
+          PY
+          rm /tmp/cc0-human-mesh.zip
+      - name: Use only CPU and asset Blender mesh data to render a high-topology human still
+        run: |
+          mkdir -p proof/cc0-actual-mesh
+          ./blender-4.5.14-linux-x64/blender -b -t 2 --factory-startup --disable-autoexec \
+            --python studio/proofs/cc0_human_mesh_render.py -- \
+            cc0-assets/base.blend proof/cc0-actual-mesh
+          test -s proof/cc0-actual-mesh/cc0-original-human-mesh-cpu.png
+          python - <<'PY'
+          import pathlib,json
+          p=json.loads(pathlib.Path("proof/cc0-actual-mesh/cc0-human-mesh-cpu.json").read_text())
+          assert p["device"]=="CPU" and p["ai_weight_files_loaded"]==0
+          assert p["render_succeeded"] and p["selected_vertices"]>1000
+          print("PASS official CC0 human mesh CPU Cycles",p["selected_vertices"],"vertices")
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: original-CC0-high-topology-human-mesh-CPU-render-proof
+          path: proof/cc0-actual-mesh/
+          if-no-files-found: warn
+          retention-days: 7
