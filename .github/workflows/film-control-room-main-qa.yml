@@ -1,0 +1,31 @@
+name: Film Studio Control Room - safe deploy source QA
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/control-room/**'
+      - '.github/workflows/film-control-room-main-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test staging control room and block unauthorized writes
+        working-directory: studio/control-room
+        run: npm test
+      - name: Verify Node entrypoint works with zero paid dependencies
+        working-directory: studio/control-room
+        run: |
+          PORT=3081 node server.mjs > /tmp/film-studio.log 2>&1 &
+          pid=$!
+          sleep 2
+          curl --fail --silent http://127.0.0.1:3081/healthz
+          curl --fail --silent http://127.0.0.1:3081/ | grep -q 'ELIJAH FILM STUDIO'
+          kill "$pid"
