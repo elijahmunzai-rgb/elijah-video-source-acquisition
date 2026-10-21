@@ -25,7 +25,7 @@ The fixed manifest comes from `zhuyansen/awesome-claude-video-skills` at commit 
 
 `film-vault/import_sources.py` attempts original Git clones, recursive submodules, Git LFS and file hashes. `film-vault/verify_sources.py` only passes with all 318 unique repositories independently verified.
 
-**Current verified 318-source count: NOT YET COMPLETED.** Do not claim full acquisition before examining passing artifacts and independent file inventories. Public workflows may still be restricted by the GitHub account's runner provisioning or artifact limits. No paid services will be purchased.
+**VERIFIED: 318/318 historical original source snapshots** (317 directly from their original GitHub locations, 1 from the identical Git commit/tree preserved in a surviving fork). Full file-level and three known historical SHA-256 checks passed for the recovered 58-file source. See [successful final recovery run](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39666091478), the hash-only artifact `318-original-source-recovery-audit-only`, and [original run (317 direct verified)](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39658143891). This is a **source snapshot audit**, not evidence that 318 packages are installed, safe to run, license-redistributable, or production-cinema quality. Public workflows may still be restricted by the GitHub account's runner provisioning or artifact limits. No paid services will be purchased.
 
 ## Privacy and upstream licensing
 
@@ -40,3 +40,12 @@ The old, isolated `outboundforge-agent` video-source sandbox branch was only a t
 ## Render proof and quality bar
 
 Technical success (valid codec, duration, resolution, correct loudness) is not equivalent to cinematic quality (acting, camera motion, pacing, realism, visual storytelling). Require both for acceptance. Code-only approaches can deliver professional design and animation, but photorealistic humans/environment simulation depend on actual image/scene/renderer data and computational capacity, not simply the number of skills installed.
+
+
+## Historical original source #318 — recovered, with rights preserved
+
+The original `Miftahul-Islam-Efaz/Motion-graphics-skill` URL now returns 404. We recovered **the exact original Git commit** `4fe427bcda356b8a53ce65705eecced2e10be572` via surviving fork `mysticalsin/Motion-graphics-skill` and verified tree `fe56211a50c8123afc42efc87a9659730c8ddd52`. The original commit contains **58 tracked source files** (~13.1 MB uncompressed). Historical external independently recorded SHA-256 digests for `README.md`, `skills/motion-video-director/SKILL.md`, and `LICENSE.md` all matched exactly; all tracked files received SHA-256 inventory and no LFS pointers or missing files were present.
+
+Do **not** vendor the original protected skill here: its original LICENSE limits redistribution of protected materials. The public repository retains only our independent skills, immutable source identifiers, hash-only verification, and the recovery workflow. Source can be restored reproducibly from the surviving fork at its original commit while that fork remains available, subject to its license. This does not imply a perpetual backup.
+
+The [source recovery issue](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/issues/1) tracks provenance and rights. 318 source snapshots verified does not mean all upstream video-processing workflows were executed.
