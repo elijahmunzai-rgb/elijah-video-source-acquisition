@@ -1,0 +1,43 @@
+name: Package Hostinger Film Studio Staging Web App (no paid services)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio/control-room/**'
+      - '.github/workflows/package-hostinger-studio.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify isolated public-demo web app has no dependencies or private credentials
+        working-directory: studio/control-room
+        run: |
+          npm test
+          node - <<'JS'
+          const p=require('./package.json');
+          if(p.dependencies && Object.keys(p.dependencies).length)process.exit(1);
+          if(p.scripts.start !== 'node server.mjs')process.exit(1);
+          console.log('SAFE: no paid APIs or npm dependencies; start command validated');
+          JS
+      - name: Create standalone ZIP with Node entry point at archive root
+        run: |
+          mkdir -p release
+          cd studio/control-room
+          zip -9 -j ../../release/Elijah-Film-Studio-Hostinger-Staging.zip \
+            server.mjs index.html package.json README.md
+          cd ../..
+          unzip -t release/Elijah-Film-Studio-Hostinger-Staging.zip
+          unzip -Z1 release/Elijah-Film-Studio-Hostinger-Staging.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hostinger-studio-staging-zip
+          path: release/Elijah-Film-Studio-Hostinger-Staging.zip
+          retention-days: 14
