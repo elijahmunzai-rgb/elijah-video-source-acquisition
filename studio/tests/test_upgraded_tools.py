@@ -31,7 +31,8 @@ class QualityUpgradeTests(unittest.TestCase):
       for name, freq in [('v',220),('m',110)]:
         subprocess.run(['ffmpeg','-loglevel','error','-y','-f','lavfi','-i',f'sine=frequency={freq}:duration=3:sample_rate=48000',str(d/f'{name}.wav')],check=True)
       a=A();a.voice=d/'v.wav';a.music=d/'m.wav';a.effects=None;a.duration=3.0;a.target_lufs=-16;a.music_gain=.22;a.effects_gain=.48;a.output=d/'mix.wav'
-      subprocess.run(self.mixer.build_command(a),check=True,capture_output=True)
+      result=subprocess.run(self.mixer.build_command(a),capture_output=True,text=True)
+      self.assertEqual(result.returncode,0,result.stderr)
       self.assertTrue(a.output.exists())
       probe=subprocess.check_output(['ffprobe','-v','error','-show_entries','stream=channels','-show_entries','format=duration','-of','csv=p=0',str(a.output)]).decode()
       self.assertIn('2',probe)
