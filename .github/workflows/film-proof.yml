@@ -58,8 +58,8 @@ jobs:
         run: |
           mkdir -p proof/3d-frames
           blender -b -t 2 --python studio/proofs/blender_pbr.py -- proof/3d-frames
-          test "$(find proof/3d-frames -name '*.png' | wc -l)" -eq 8
-          ffmpeg -hide_banner -loglevel error -y -framerate 8 -i proof/3d-frames/%04d.png -c:v libx264 -pix_fmt yuv420p -crf 19 proof/3d-camera.mp4
+          test "$(find proof/3d-frames -name '*.png' | wc -l)" -eq 24
+          ffmpeg -hide_banner -loglevel error -y -framerate 24 -i proof/3d-frames/%04d.png -vf hqdn3d=1.5:1.5:6:6 -c:v libx264 -pix_fmt yuv420p -crf 18 proof/3d-camera.mp4
           ffprobe -v error -show_entries stream=codec_name,width,height,nb_frames -of json proof/3d-camera.mp4
       - name: Preserve rendered 3D and camera benchmark
         if: always()
