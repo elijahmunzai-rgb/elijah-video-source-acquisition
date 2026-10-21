@@ -38,7 +38,7 @@ class QualityUpgradeTests(unittest.TestCase):
       self.assertIn('3.000000',probe)
   def test_04_all_specialists_have_frontmatter(self):
     dirs=[x for x in (ROOT/'skills').glob('*/SKILL.md')]
-    self.assertEqual(len(dirs),10)
+    self.assertGreaterEqual(len(dirs),25)
     for f in dirs:self.assertTrue(f.read_text().startswith('---\nname: '))
 
 if __name__=='__main__':unittest.main()
