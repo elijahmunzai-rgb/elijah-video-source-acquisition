@@ -4,7 +4,7 @@ import {readDemoMp4} from './media.mjs';
 const REPO='elijahmunzai-rgb/elijah-video-source-acquisition';
 const API='https://api.github.com/repos/'+REPO;
 const WORKFLOW='film-studio-agents.yml';
-const BRANCH='main';
+const BRANCH='studio-operator-phase2-20261022';
 const ACTIONS='https://github.com/'+REPO+'/actions/workflows/'+WORKFLOW;
 const COOKIE='__Host-studio';
 const durations=new Set(['15','30','60','120','600']);
