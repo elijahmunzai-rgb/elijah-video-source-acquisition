@@ -10,6 +10,19 @@ on:
 permissions:
   contents: read
 jobs:
+  full-length-render-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate six project lengths, audio rights, no scene loops
+        working-directory: studio/longform
+        run: |
+          python -m py_compile render_timeline.py
+          python -m unittest -v test_render_timeline.py
   secure-web-workspace:
     runs-on: ubuntu-latest
     timeout-minutes: 8
