@@ -28,6 +28,9 @@ def load(path=REGISTRY):
         raise ValueError("Source IDs must cover 001..318")
     if any(e["stage"] not in SAFE_STAGES or any(type(e[k]) is not bool for k in ALLOWED_TYPES) for e in entries):
         raise ValueError("Invalid runtime state")
+    if any(e["runnable_confirmed"] and (e.get("sandbox_unit_test_passed") is not True or
+           not str(e.get("sandbox_proof_url","")).startswith("https://github.com/")) for e in entries):
+        raise ValueError("No runnable certification without actual linked isolated passing tests")
     if any(e["integration_verified"] and not (e["installed"] and e["runnable_confirmed"])
            for e in entries):
         raise ValueError("Cannot integrate a non-runnable or uninstalled tool")
