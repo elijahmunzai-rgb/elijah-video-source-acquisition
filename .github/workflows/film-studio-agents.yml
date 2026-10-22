@@ -49,6 +49,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install free CPU-only renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python -m pip install -r studio/requirements.txt
       - name: Test eight agents, source-rights gate and deterministic output
         run: |
           python -m unittest discover -s studio/tests -p test_film_agents.py -v
@@ -58,11 +63,6 @@ jobs:
           python studio/agents/pipeline.py --title "$PUBLIC_TITLE" \
             --goal "$PUBLIC_GOAL" --duration "$PLAN_DURATION" \
             --aspect "$PLAN_ASPECT" --public-demo --output agent-artifacts
-      - name: Install free CPU-only renderer
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg
-          python -m pip install -r studio/requirements.txt
       - name: Render original six-second 1080p H264/AAC editorial motion preview
         run: |
           python studio/agents/premium_preview.py --brief agent-artifacts/brief.json --output agent-artifacts/preview-6s.mp4
