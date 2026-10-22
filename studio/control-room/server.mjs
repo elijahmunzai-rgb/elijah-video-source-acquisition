@@ -5,6 +5,7 @@ import {createOperator} from './operator.mjs';
 const REPO = 'elijahmunzai-rgb/elijah-video-source-acquisition';
 const ACTIONS_URL = 'https://github.com/' + REPO + '/actions';
 const API_URL = 'https://api.github.com/repos/' + REPO + '/actions/runs?per_page=12';
+const FULL_FILM_ACTIONS_API = 'https://api.github.com/repos/'+REPO+'/actions/workflows/film-longform-15s-proof.yml/runs?per_page=12';
 const html = await readFile(new URL('./index.html', import.meta.url), 'utf8');
 const studioHtml = await readFile(new URL('./studio-app.html', import.meta.url), 'utf8');
 const studioScript = await readFile(new URL('./studio-app.mjs', import.meta.url), 'utf8');
@@ -64,6 +65,28 @@ export function createServer({fetcher = fetch, cacheMs = 60_000, operatorEnv = p
     if (pathname === '/studio-app.mjs' || pathname === '/project-schema.mjs') {
       res.statusCode=200;secure(res,'text/javascript; charset=utf-8');
       res.end(req.method==='HEAD'?'':pathname==='/studio-app.mjs'?studioScript:projectSchema);return;
+    }
+    if (pathname === '/api/films/history') {
+      try {
+        const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),8000);
+        let upstream;
+        try {
+          upstream=await fetcher(FULL_FILM_ACTIONS_API,{signal:ctrl.signal,headers:{
+            Accept:'application/vnd.github+json','User-Agent':'ElijahFilmStudio/FullDuration/0.3'}});
+        } finally {clearTimeout(timer);}
+        if(!upstream.ok)throw Error('GitHub unavailable');
+        const raw=await upstream.json();
+        if(!Array.isArray(raw.workflow_runs))throw Error('Unexpected GitHub response');
+        const entries=raw.workflow_runs.filter(r=>Number.isSafeInteger(Number(r.id))&&
+           /^https:\/\/github\.com\/elijahmunzai-rgb\/elijah-video-source-acquisition\/actions\/runs\/[0-9]+$/.test(r.html_url||''))
+           .slice(0,12).map(r=>({id:Number(r.id),status:String(r.status||'').slice(0,30),
+             conclusion:r.conclusion==null?null:String(r.conclusion).slice(0,30),
+             created_at:String(r.created_at||'').slice(0,40),
+             run_number:Number(r.run_number)||0,url:r.html_url,kind:'15-second real-footage and audio technical proof'}));
+        json(res,200,{jobs:entries,source:'public GitHub Actions',public_demo_only:true,
+          note:'A run is a technical render, NOT an approved finished film.'});
+      }catch {json(res,503,{error:'Full-film jobs temporarily unavailable',jobs:[]});}
+      return;
     }
     if (pathname === '/api/status') {
       if (cached && Date.now() < expires) {
