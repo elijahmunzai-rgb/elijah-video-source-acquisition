@@ -1,3 +1,15 @@
+# V3.1 UPDATE: AUTHENTICATED SITE-SPECIFIC FILM PROJECT STORAGE BUILT (22 Oct 2026, current)
+
+- Added `studio/control-room/project-store.mjs`, persisted film-project JSON ONLY (not media), protected by existing administrator session, strict origin/CSRF rules, 50-project count limit, max 180KB per JSON and file permissions. No client project content goes to GitHub public Actions. It is **fail-closed unless both `STUDIO_ADMIN_PASSWORD` and `STUDIO_PROJECT_DIR` are configured**; do not request their secrets in public chat. The path must be a private absolute folder with suitable backups/persistence outside web root; Hostinger file durability must be separately verified before calling this production storage.
+- `/api/projects` GET/POST, `/api/projects/{uuid}` GET routes and /studio UI save/list/open buttons added, disabled when operator not configured. No irreversible delete endpoint; save never implicitly authorizes publishing.
+- Added Node tests for private 300/600s project persistence, CSRF denial, authentication, no public upload and no false publication. Fixed a route regex error detected by CI (never shipped).
+- **Latest CI SUCCESS:** [39822938518](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39822938518), secure app tests + Python all-duration contracts. **Latest Hostinger packaging SUCCESS:** [39822938589](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39822938589) (earlier packaging IDs now superseded). **Nine-file** release inner `Elijah-Film-Studio-Full-Duration-Staging.zip` includes `project-store.mjs` and all existing modules. Validated inner ZIP and SHA256. Exact container path in this conversation: `/mnt/data/film_studio_v31_final/Elijah-Film-Studio-Full-Duration-Staging.zip`.
+- V3.1 remains **NOT DEPLOYED**: the IO AI Browser file upload expects a user-approved local file; none was available last checked. Existing live old Hostinger app remains unchanged and healthy.
+- **Still NOT completed**: secure media upload/video asset store, fully authenticated multi-duration render dispatch, per-shot job progress, direct preview/download in app for new 15s artifacts, 30/60/120/300/600s actual films and natural professional voice/music. Running high-fidelity films requires real non-overlapping footage and appropriate compute; no fabricated 10min loops.
+- Do not cite the previous V3 8-file ZIP or 39821865475 as latest. Use the V3.1 9-file bundle and success run 39822938589.
+
+---
+
 # Elijah Film Studio V3: Full-duration application and CPU film-rendering progress
 **Date:** 2026-10-22. **Dedicated development branch** `film-studio-full-duration-app-20261022`. 
 **IMPORTANT: code built and tested on branch, NOT yet deployed on live Hostinger. Do not call it a completed 10-minute cinematic SaaS.**
