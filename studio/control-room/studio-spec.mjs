@@ -7,8 +7,8 @@ export const MIN_SECONDS_PER_SHOT = 2;
 export const MAX_SECONDS_PER_SHOT = 18;
 export const FORMAT = {landscape:[1920,1080],portrait:[1080,1920],square:[1080,1080]};
 export const LICENSED_DEMO_ASSETS = Object.freeze({
- 'mixkit-4610':{name:'Call center pair',page:'https://mixkit.co/free-stock-video/woman-and-man-working-at-a-call-center-4610/',type:'real-stock-footage',label:'Illustrative stock actors, not agency employees'},
- 'mixkit-4603':{name:'Operators and headsets',page:'https://mixkit.co/free-stock-video/a-pair-of-employees-working-in-a-call-center-4603/',type:'real-stock-footage',label:'Illustrative stock actors, not agency employees'}
+ 'mixkit-4610':{name:'Call center pair',page:'https://mixkit.co/free-stock-video/woman-and-man-working-at-a-call-center-4610/',type:'real-stock-footage',duration:14.64,label:'Illustrative stock actors, not agency employees'},
+ 'mixkit-4603':{name:'Operators and headsets',page:'https://mixkit.co/free-stock-video/a-pair-of-employees-working-in-a-call-center-4603/',type:'real-stock-footage',duration:13.16,label:'Illustrative stock actors, not agency employees'}
 });
 export function requiredShots(seconds){return Math.ceil(seconds/MAX_SECONDS_PER_SHOT);}
 export function suggestShotDurations(seconds){
@@ -63,13 +63,19 @@ export function validateProject(input,{render=false}={}){
   if(voice==='off'&&music==='off')errors.push('At least one actual audio track required');
   if(voice==='espeak-en'&&!scenes.some(s=>s.narration))errors.push('Voiceover enabled but no narration text is in any shot');
   if(voice==='recorded-voice'||music==='licensed-track')errors.push('Private media uploads are not supported in public demo worker');
-  let visualSeconds=0;const parts=new Set(),uniq=new Set();
+  let visualSeconds=0;const parts=new Set(),uniq=new Set(),segments=new Map();
   for(const s of scenes){
    if(s.asset!=='unassigned'){
     if(!(s.asset in LICENSED_DEMO_ASSETS))errors.push(s.id+': only allowlisted approved stock clips currently renderable');
     else{
      if(!s.rights_approved)errors.push(s.id+': source rights not approved');
      visualSeconds+=s.seconds;uniq.add(s.asset);parts.add(s.asset+'@'+s.in_point.toFixed(2)+'+'+s.seconds);
+     const asset=LICENSED_DEMO_ASSETS[s.asset],end=s.in_point+s.seconds;
+     if(end>asset.duration-.08)errors.push(s.id+': source media is only '+asset.duration+'s long; trim this scene');
+     const prior=segments.get(s.asset)||[];
+     if(prior.some(([start,finish])=>s.in_point<finish-.05&&end>start+.05))
+       errors.push(s.id+': overlaps existing shot footage from the same source; use unique recorded moments');
+     prior.push([s.in_point,end]);segments.set(s.asset,prior);
     }
    }else errors.push(s.id+': shot has no real licensed media');
   }
