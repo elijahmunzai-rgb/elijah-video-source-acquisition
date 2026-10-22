@@ -3,6 +3,8 @@
 
 **New primary-source addendum (pasted prior chat + actual ChatGPT skill inventory):** [USER-PASTED-CHAT-EVIDENCE-2026-10-22.md](./USER-PASTED-CHAT-EVIDENCE-2026-10-22.md). It confirms early Video Production Mastery V1 with one director + 15 specialist skills, later 318-source V2 goal, actual installed skills (32 general Video Production Mastery, 27 Elijah Video Production Mastery, 15 overlapping Asset Governance; 74 entries total), historical Hostinger resource figures, IO AI Browser-only preference, zero paid services and GPU-last rule. The current system should reuse existing installed skill groups rather than create redundant fresh plugins.
 
+**Second screenshot recovery addendum (14 additional old-chat screenshots):** [ADDITIONAL-14-SCREENSHOT-ENGINEERING-EVIDENCE-2026-10-22.md](./ADDITIONAL-14-SCREENSHOT-ENGINEERING-EVIDENCE-2026-10-22.md). Covers eight-role agent network, Hostinger vs free GitHub CPU and optional CPU LLM, cross-engine recorded footage/Blender/Remotion proofs, exact-historical 318th source restoration, real-vs-synthetic camera tracking and actor limits, 30-second montage versus looping long-duration tests, public film repo versus private sales repo and no paid services. Historic screenshot claims cross-checked against the pinned execution ledger where possible.
+
 This document consolidates the available prior conversation recovery with original repository handovers, pinned historical 318-source index and current tested work. The complete text of every earlier chat message was NOT available verbatim. **Never treat this as evidence every planned feature is completed.** Supersede any prior promise that code compiling or MP4 encoding proves high-quality filmmaking.
 
 ## 1. Original approved vision (binding requirements)
