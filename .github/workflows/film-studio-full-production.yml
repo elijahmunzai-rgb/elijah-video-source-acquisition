@@ -1,7 +1,7 @@
 name: Film Studio full-workflow beta (real durations, voice and music)
 on:
   push:
-    branches: [film-studio-full-workflow-v1-20261022]
+    branches: [film-studio-full-workflow-v1-20261022, studio-operator-phase2-20261022]
     paths:
       - 'studio/control-room/**'
       - 'studio/full-workflow/**'
@@ -19,13 +19,14 @@ concurrency:
   cancel-in-progress: false
 jobs:
   app-contract-and-render:
-    if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition'
+    if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition' && (github.event_name != 'push' || github.actor == 'elijahmunzai-rgb')
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -59,6 +60,46 @@ jobs:
           mkdir -p film-work
           if [ -n "$PUBLIC_SPEC_JSON" ]; then
             printf '%s' "$PUBLIC_SPEC_JSON" > film-work/project.json
+          elif [ "$GITHUB_REF_NAME" = "studio-operator-phase2-20261022" ]; then
+            # Only one freshly CREATED public JSON request, never arbitrary user filename.
+            request="$(git diff HEAD^ HEAD --diff-filter=A --name-only -- 'studio/full-workflow/requests/' | head -2)"
+            test "$(printf '%s\n' "$request" | sed '/^$/d' | wc -l)" -eq 1
+            echo "$request" | grep -Eq '^studio/full-workflow/requests/film-[0-9]+-[a-f0-9]{10}\.json
+          python studio/full-workflow/render.py --project film-work/project.json --output film-work --validate-only
+      - name: Render actual film length, recorded-person footage, voice and score
+        run: |
+          python studio/full-workflow/render.py --project film-work/project.json --output film-work/output
+          ffprobe -v error -show_format -show_streams -of json film-work/output/film-studio-public-demo.mp4 > film-work/output/FFPROBE.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('film-work/output')
+          a=json.loads((p/'RENDER_QA.json').read_text())
+          s=json.loads((p/'SHOT_PLAN.json').read_text())
+          v=json.loads((p/'FFPROBE.json').read_text())
+          assert a['technical_pass'] and not a['public_publish_approved']
+          assert abs(a['duration_seconds']-s['duration_seconds'])<.18
+          assert a['source_segments']==len(s['scenes'])
+          assert any(x['codec_type']=='audio' for x in v['streams'])
+          assert (p/'film-studio-public-demo.mp4').stat().st_size>500000
+          print('PASS actual encoded requested duration; narration and score; public source provenance. Not creative approved.')
+          PY
+      - name: Upload MP4, project timeline and source rights/QA proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: elijah-film-studio-full-duration-public-demo-review
+          path: |
+            film-work/output/film-studio-public-demo.mp4
+            film-work/output/RENDER_QA.json
+            film-work/output/SHOT_PLAN.json
+            film-work/output/SOURCE_RIGHTS.json
+            film-work/output/FFPROBE.json
+          if-no-files-found: warn
+          retention-days: 7
+
+            test "$(wc -c < "$request")" -le 60000
+            cp "$request" film-work/project.json
           else
             cp studio/full-workflow/examples/public-15-second-people-first.json film-work/project.json
           fi
