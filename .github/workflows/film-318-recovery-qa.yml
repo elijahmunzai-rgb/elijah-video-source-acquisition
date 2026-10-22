@@ -1,0 +1,35 @@
+name: Recover all 318 sources and enforce real film acceptance
+on:
+  push:
+    branches: [film-cinematic-318-recovery-20261022]
+    paths:
+      - 'studio/318-sources/**'
+      - 'studio/quality/**'
+      - 'studio/recovery/**'
+      - '.github/workflows/film-318-recovery-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate all frozen 318 source references without executing upstream
+        working-directory: studio/318-sources
+        run: |
+          python -m unittest -v test_route_sources.py
+          python route_sources.py > /tmp/full-318-coverage.json
+          python route_sources.py --stage screenwriting-direction --limit 8 > /tmp/film-story-queue.json
+      - name: Fail closed on incomplete films and poor visual-quality acceptance
+        working-directory: studio/quality
+        run: python -m unittest -v test_creative_release_gate.py
+      - name: Check recovery document is present and nontrivial
+        run: |
+          test -s studio/recovery/MASTER-FILM-STUDIO-PLAN-2026-10-22.md
+          test $(wc -c < studio/recovery/MASTER-FILM-STUDIO-PLAN-2026-10-22.md) -gt 9000
+          echo 'PASS: 318 sources accounted for; no untrusted repos executed; creative release blockers active'
