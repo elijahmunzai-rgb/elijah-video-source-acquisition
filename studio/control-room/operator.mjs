@@ -1,9 +1,11 @@
 import {randomBytes, createHash, timingSafeEqual} from 'node:crypto';
 import {readDemoMp4} from './media.mjs';
+import {validateProject} from './studio-spec.mjs';
 
 const REPO='elijahmunzai-rgb/elijah-video-source-acquisition';
 const API='https://api.github.com/repos/'+REPO;
 const WORKFLOW='film-studio-agents.yml';
+const FULL_WORKFLOW='film-studio-full-production.yml';
 const BRANCH='studio-operator-phase2-20261022';
 const ACTIONS='https://github.com/'+REPO+'/actions/workflows/'+WORKFLOW;
 const COOKIE='__Host-studio';
@@ -25,10 +27,10 @@ function validOrigin(req){
  }catch{return false;}
 }
 function action(req){return validOrigin(req)&&req.headers['x-studio-action']==='1';}
-async function readBody(req){
+async function readBody(req,limit=4096){
  if(!String(req.headers['content-type']||'').startsWith('application/json'))throw Error('JSON body required');
  let total=0,body='';
- for await(const chunk of req){total+=chunk.length;if(total>4096)throw Error('Request too large');body+=chunk.toString('utf8');}
+ for await(const chunk of req){total+=chunk.length;if(total>limit)throw Error('Request too large');body+=chunk.toString('utf8');}
  return JSON.parse(body);
 }
 function authToken(req){const cookie=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(x=>x.startsWith(COOKIE+'='));return cookie?.slice((COOKIE+'=').length);}
@@ -128,6 +130,32 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
     if(response.status!==204){send(res,502,{error:'GitHub rejected job dispatch. Check token permissions and workflow availability.'});return true;}
     send(res,202,{accepted:true,run_id:null,notice:'GitHub accepted demo request; discover run in recent jobs shortly',actions_url:ACTIONS});return true;
    }catch{send(res,502,{error:'GitHub dispatch temporarily unavailable'});return true;}
+  }
+  if(pathname==='/api/studio/render' && method==='POST'){
+    if(!action(req)){send(res,403,{error:'Same-origin action required'});return true;}
+    if(!auth(req)){send(res,401,{error:'Admin login required'});return true;}
+    if(!canDispatch){send(res,503,{error:'Server-side GitHub dispatch not configured'});return true;}
+    let body;try{body=await readBody(req,120000);}catch{send(res,400,{error:'Invalid project JSON or body too large'});return true;}
+    const result=validateProject(body?.project,{render:true});
+    if(!result.ok){send(res,422,{error:'Incomplete licensed footage/audio plan',blockers:result.errors.slice(0,20)});return true;}
+    const recent=launches.filter(t=>now()-t<24*60*60*1000);
+    if(recent.length>=6||recent.filter(t=>now()-t<60*60*1000).length>=2){
+      send(res,429,{error:'Public render quota reached'});return true;
+    }
+    const spec_json=JSON.stringify(result.project);
+    if(Buffer.byteLength(spec_json)>60000){send(res,413,{error:'Timeline too large for GitHub Actions input; split into projects'});return true;}
+    launches.push(now());
+    try{
+      const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),8000);let response;
+      try{
+        response=await fetcher(API+'/actions/workflows/'+FULL_WORKFLOW+'/dispatches',{
+          method:'POST',headers:{...ghHeaders(true),'Content-Type':'application/json'},
+          body:JSON.stringify({ref:BRANCH,inputs:{spec_json}}),signal:ctrl.signal});
+      }finally{clearTimeout(timer);}
+      if(response.status!==204){send(res,502,{error:'Full-film workflow dispatch rejected. Workflow must be deployed to approved branch before use.'});return true;}
+      send(res,202,{accepted:true,run_id:null,workflow:FULL_WORKFLOW,
+        notice:'GitHub accepted real-duration source-based film project. Observe workflow job and artifact for actual completion.'});return true;
+    }catch{send(res,502,{error:'GitHub dispatch unavailable'});return true;}
   }
   const match=/^\/api\/jobs\/([1-9][0-9]{0,18})(?:\/(preview|download))?$/.exec(pathname);
   if(match){
