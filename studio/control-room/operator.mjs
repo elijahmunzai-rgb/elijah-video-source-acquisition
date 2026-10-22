@@ -129,14 +129,14 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
     send(res,202,{accepted:true,run_id:null,notice:'GitHub accepted demo request; discover run in recent jobs shortly',actions_url:ACTIONS});return true;
    }catch{send(res,502,{error:'GitHub dispatch temporarily unavailable'});return true;}
   }
-  const match=/^\/api\/jobs\/([1-9][0-9]{0,18})(?:\/(preview))?$/.exec(pathname);
+  const match=/^\/api\/jobs\/([1-9][0-9]{0,18})(?:\/(preview|download))?$/.exec(pathname);
   if(match){
    if(method!=='GET'&&method!=='HEAD'){send(res,405,{error:'Method not allowed'});return true;}
    const id=match[1];
    try{
     const run=await verifiedRun(id);
     if(!run){send(res,404,{error:'Public demo run not found'});return true;}
-    if(match[2]==='preview'){
+    if(match[2]==='preview'||match[2]==='download'){
      if(!auth(req)||!canDispatch){send(res,401,{error:'Admin login and preview configuration required'});return true;}
      const arts=await ghGet('/actions/runs/'+id+'/artifacts?per_page=30',true);
      const a=(arts.artifacts||[]).find(x=>x.name==='public-demo-studio-agents-storyboard-preview'&&!x.expired);
@@ -153,7 +153,7 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
       if(!Number.isSafeInteger(start)||!Number.isSafeInteger(end)||start>end||start>=mp4.length){send(res,416,{error:'Out-of-range'});return true;}
       code=206;
      }
-     const headers={'Content-Type':'video/mp4','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Disposition':'inline; filename="public-demo-preview-6s.mp4"','Accept-Ranges':'bytes','Content-Length':end-start+1};
+     const headers={'Content-Type':'video/mp4','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Content-Disposition':(match[2]==='download'?'attachment':'inline')+'; filename="public-demo-preview-6s.mp4"','Accept-Ranges':'bytes','Content-Length':end-start+1};
      if(code===206)headers['Content-Range']='bytes '+start+'-'+end+'/'+mp4.length;
      res.writeHead(code,headers);res.end(method==='HEAD'?'':mp4.subarray(start,end+1));return true;
     }
