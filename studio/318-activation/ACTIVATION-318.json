@@ -6449,7 +6449,11 @@
       "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows",
       "sandbox_unit_test_passed": true,
       "sandbox_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39740772442",
-      "proof_scope": "selected unit tests only; not a finished video-production integration"
+      "proof_scope": "selected unit tests only; not a finished video-production integration",
+      "lab_media_composite_verified": true,
+      "lab_media_composite_proof": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39741446302",
+      "lab_media_composite_format": "actual filmed stock human footage + original SVG, 1280x720 H264 AAC 3s",
+      "lab_creative_assessment": "technical overlay works but is visually distracting; NOT approved for professional commercial"
     },
     {
       "id": "293",
@@ -7030,5 +7034,6 @@
   "last_verified_batch": "A",
   "last_verified_run": 39740772442,
   "fresh_selected_upstream_unit_tests": 3,
-  "fresh_instruction_pack_verified": 1
+  "fresh_instruction_pack_verified": 1,
+  "last_lab_integration_run": 39741446302
 }
