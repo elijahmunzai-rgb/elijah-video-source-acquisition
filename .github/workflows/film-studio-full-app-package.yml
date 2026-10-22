@@ -1,0 +1,48 @@
+name: Package Film Studio project workspace for Hostinger (tested no-billing ZIP)
+on:
+  push:
+    branches: [film-studio-full-workflow-v1-20261022]
+    paths:
+      - 'studio/control-room/**'
+      - '.github/workflows/film-studio-full-app-package.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test exact Hostinger Node 20 runtime and app APIs
+        working-directory: studio/control-room
+        run: |
+          npm test
+          node --check server.mjs
+          node --check operator.mjs
+          node --check studio-spec.mjs
+      - name: Package exact no-secrets runtime in ZIP root
+        run: |
+          set -euo pipefail
+          mkdir -p full-app-release
+          cd studio/control-room
+          for f in package.json server.mjs operator.mjs media.mjs studio-spec.mjs studio.html index.html; do
+            test -s "$f"
+          done
+          zip -q -j ../../full-app-release/Elijah-Film-Studio-Full-Workflow-Hostinger-BETA.zip \
+            package.json server.mjs operator.mjs media.mjs studio-spec.mjs studio.html index.html
+          cd ../..
+          test "$(unzip -Z1 full-app-release/Elijah-Film-Studio-Full-Workflow-Hostinger-BETA.zip | wc -l)" -eq 7
+          unzip -Z1 full-app-release/Elijah-Film-Studio-Full-Workflow-Hostinger-BETA.zip
+          sha256sum full-app-release/*.zip > full-app-release/SHA256SUMS.txt
+          printf '%s\n' 'No secrets, paid API, private media, GPU or billing. DO NOT mark live until separately deployed and smoke-tested.'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elijah-film-studio-hostinger-full-app-beta-package
+          path: full-app-release/
+          retention-days: 14
