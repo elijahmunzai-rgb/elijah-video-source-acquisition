@@ -1,0 +1,18 @@
+# First source review: eight quality-focused candidates (2026-10-22)
+
+**Scope:** repository metadata and upstream index only, NOT code security, dependency/install, commercial-rights or rendered video quality certification. Do not claim these tools are connected or tested. All 318 sources are preserved in ROUTED-318-INVENTORY.json, but the first eight below deserve further *safe isolated* evaluation because they address story, source footage/editing and local composition. Dan's 16GB GPU remains optional LAST RESORT.
+
+| Role to investigate | Project | GitHub-declared license | Preliminary relevance | Required acceptance before adoption |
+|---|---|---|---|---|
+| Cinematic story/script development | [jtydhr88/screenwriting-skills](https://github.com/jtydhr88/screenwriting-skills) | MIT | Existing screenwriting skill framework; source-led narrative and dialogue | Read full scripts, run offline sample, produce original 30-second beat sheet and continuity; check actual distribution terms |
+| Real footage editing and shot variety | [cartesiancs/cartcut](https://github.com/cartesiancs/cartcut) | MIT | Local editor for AI agents; may support timeline editability | Inspect package scripts, run sandboxed sample with precleared footage, validate export/preview, no external uploads |
+| Human-in-loop intelligent editorial | [FireRedTeam/FireRed-OpenStoryline](https://github.com/FireRedTeam/FireRed-OpenStoryline) | Apache-2.0 | Natural language editing/orchestration; potential story-to-timeline | Check whether LLM inference and packages can run fully offline and free; ensure no API reliance; real test required |
+| Production-oriented agent toolkit | [digitalsamba/claude-code-video-toolkit](https://github.com/digitalsamba/claude-code-video-toolkit) | MIT | Python video production automation candidate | Inspect licenses, entrypoints, shell, scripts, dependencies; test isolated offline without client data |
+| Local code-first film orchestration | [FavioVazquez/showtime](https://github.com/FavioVazquez/showtime) | MIT | Self-describes as local no-API-key studio | Check actual dependencies and output media, no server surprises, sample cinematic footage and soundtrack |
+| HTML/video rendering | [heygen-com/hyperframes](https://github.com/heygen-com/hyperframes) | Apache-2.0 | HTML animation and real code-rendered video; use only as supporting VFX | Verify renderer works offline, media paths/licensing; no assumptions about HeyGen API avatar service being free |
+| High-quality motion techniques | [iart-ai/motion-skills](https://github.com/iart-ai/motion-skills) | MIT | Technique reference for motion/vfx/transitions | Reject repetitive UI cards/kinetic type when source footage is required; validate real compositing sample |
+| Animated overlays and titles | [diffusionstudio/lottie](https://github.com/diffusionstudio/lottie) | MIT | Selected upstream unit tests historically passed 3/3 | Prove professional export/transparency and offline compositing into real footage; 3 tests did not certify whole editor |
+
+GitHub metadata checked 2026-10-22: none of these eight was archived. Repository license metadata is only preliminary, not a complete source-file rights review. None has been installed by this review. **Next test must assess high quality from final actual rendered frames and sound, not README promises.**
+
+Avoid interpreting API-provider wrappers, celebrity face-swap tools or AGPL projects as free plug-and-play components. Upstream catalog metadata includes NOASSERTION and missing licenses on 80 projects, eight AGPL, one CC-BY-SA and eight upstream security caution labels. Review terms/security independently before use. Do not run arbitrary setup scripts on live Hostinger or Dan's personal PC.
