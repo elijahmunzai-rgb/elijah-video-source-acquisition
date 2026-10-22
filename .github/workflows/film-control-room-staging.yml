@@ -1,7 +1,7 @@
 name: Film Studio Hostinger Control Room - staging QA
 on:
   push:
-    branches: [studio-control-room-staging-20261022]
+    branches: [studio-control-room-staging-20261022, studio-operator-phase2-20261022]
     paths:
       - 'studio/control-room/**'
       - '.github/workflows/film-control-room-staging.yml'
