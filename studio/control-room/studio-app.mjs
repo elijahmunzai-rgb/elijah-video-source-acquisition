@@ -178,4 +178,20 @@ $('importFile').addEventListener('change',async e=>{
  }catch(ex){$('validation').textContent='Import rejected: '+errText(ex);}
  e.target.value='';
 });
-recover();rebuild();
+async function loadFilmJobs(){
+ const root=$('filmJobs');root.replaceChildren();
+ try{
+  const res=await fetch('/api/films/history',{credentials:'same-origin',cache:'no-store'});
+  if(!res.ok)throw Error('Public render history currently unavailable');
+  const data=await res.json();
+  if(!Array.isArray(data.jobs)||!data.jobs.length){root.textContent='No verified full-length public-demo renders yet.';return;}
+  for(const job of data.jobs.slice(0,6)){
+   const item=node('div');item.style.padding='8px 0';item.style.borderBottom='1px solid #2d3a48';
+   const link=node('a',null,'#'+(job.run_number||job.id)+' · '+(job.conclusion||job.status));
+   link.href=job.url;link.target='_blank';link.rel='noopener noreferrer';
+   item.append(link);item.append(node('div','minor',job.kind+' · '+(job.created_at||'')));
+   root.append(item);
+  }
+ }catch(e){root.textContent='Render history unavailable. GitHub Actions remains the fallback.';}
+}
+recover();rebuild();loadFilmJobs();
