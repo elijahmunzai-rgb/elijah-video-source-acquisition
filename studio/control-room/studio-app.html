@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Film Studio | Production Workspace (Developer Preview)</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#f4f4f7;background:#090c13;--gold:#dcb781;--line:#28303e;--muted:#a8b4c7}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 87% 0%,#19233a 0,transparent 33%),#090c13;min-height:100vh}
+button,input,select,textarea{font:inherit}button,a.btn{cursor:pointer;border-radius:10px;border:1px solid #465064;background:#182232;color:#edf1fa;padding:11px 15px;font-weight:650}
+button:hover,a.btn:hover{background:#253348}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid #e5b97b;outline-offset:2px}
+button.primary{background:var(--gold);color:#19191d;border-color:var(--gold)}button:disabled{opacity:.45;cursor:not-allowed}
+a{color:#d8b783}header{padding:18px max(20px,calc((100vw - 1480px)/2));display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;border-bottom:1px solid var(--line)}
+.brand{font-size:13px;letter-spacing:.19em;font-weight:800}.minor{color:var(--muted);font-size:12px}.cluster{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+main{max-width:1480px;padding:30px 20px 100px;margin:auto}.heading{display:flex;gap:20px;align-items:start;justify-content:space-between;flex-wrap:wrap}.eyebrow{font-size:12px;color:var(--gold);text-transform:uppercase;letter-spacing:.17em}h1{font-size:clamp(29px,4vw,54px);letter-spacing:-.045em;margin:10px 0 8px}h2{font-size:20px;margin:0 0 16px}h3{font-size:15px;margin:0}
+p{color:var(--muted);line-height:1.6;margin:7px 0 15px}.pill{border:1px solid #425166;padding:7px 11px;border-radius:40px;font-size:12px;color:#d8e3ea}
+.app{display:grid;grid-template-columns:minmax(235px,.78fr) minmax(320px,1.55fr) minmax(250px,.9fr);gap:16px;margin-top:22px;align-items:start}
+.panel{border:1px solid var(--line);border-radius:17px;background:#111924;padding:21px;min-width:0}
+.stack{display:grid;gap:14px}.stack label{display:grid;gap:6px;color:#bccbd7;font-size:12px}
+input,select,textarea{width:100%;background:#090f19;border:1px solid #38475b;border-radius:9px;color:#f0f4f8;padding:11px;min-width:0}
+input[type=checkbox]{width:auto;accent-color:#dcb781}textarea{min-height:75px;resize:vertical}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.timeline{display:flex;border:1px solid #303e4d;border-radius:10px;overflow:hidden;height:43px;margin:18px 0 8px}.tick{background:#203547;position:relative;border-right:1px solid #08121c;min-width:0;cursor:pointer}.tick:nth-child(even){background:#273d4c}.tick.current{background:#825e32}.tick span{position:absolute;inset:0;display:grid;place-items:center;font-size:11px;white-space:nowrap;overflow:hidden}
+details.scene{border:1px solid #293b4d;background:#0c1622;border-radius:12px;margin-top:11px;overflow:hidden}details.scene summary{padding:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}details.scene summary::-webkit-details-marker{display:none}details.scene[open]{border-color:#576077}.sceneFields{padding:6px 15px 16px;border-top:1px solid #2a3547;display:grid;gap:12px}
+.sceneState{font-size:11px;color:#e6c58d}.controls{display:flex;flex-wrap:wrap;gap:8px}.controls button{font-size:12px;padding:8px 10px}
+.stat{color:#c9d1df;font-size:13px}.status good{color:#a8e5be}.status bad{color:#ffb8b8}.status{padding:13px;background:#0b141f;border:1px solid #304151;border-radius:10px;white-space:pre-line;font-size:12px;line-height:1.65}
+canvas{width:100%;border-radius:12px;background:#070d14;aspect-ratio:16/9;display:block;border:1px solid #394a5b}
+audio{max-width:100%}footer{margin-top:42px;color:#95a4b8;font-size:12px}
+@media(max-width:1100px){.app{grid-template-columns:minmax(230px,1fr) minmax(350px,1.6fr)}.right{grid-column:1/-1}}
+@media(max-width:750px){.app{grid-template-columns:1fr}.right{grid-column:auto}.pair{grid-template-columns:1fr}header{padding:17px 18px}}
+</style>
+</head>
+<body>
+<header>
+ <div><div class="brand">ELIJAH / FILM STUDIO</div><div class="minor">COMPLETE PRODUCTION WORKSPACE · DEVELOPMENT BUILD</div></div>
+ <div class="cluster"><a href="/" class="btn" style="text-decoration:none">← Control Room</a><span class="pill">Local drafts · No paid services</span></div>
+</header>
+<main>
+ <div class="heading"><div><div class="eyebrow">Writing → Shot Planning → Sound → Render Contract → Review</div><h1>Make the whole film.</h1>
+ <p>Build a scene-by-scene project for 15 seconds through 10 minutes. This editor exports a complete, reusable production manifest. Real final rendering requires licensed source media and an attached CPU worker.</p></div>
+ <div class="cluster"><button id="newProject">New project</button><button id="importBtn">Import JSON</button><input id="importFile" type="file" accept=".json,application/json" hidden><button id="downloadBtn" class="primary">Export film project ↓</button></div></div>
+ <div class="app">
+  <section class="panel stack">
+   <h2>01 / Project brief</h2>
+   <label>Film title<input id="filmTitle" maxlength="80" placeholder="Campaign / episode name"></label>
+   <div class="pair"><label>Target length<select id="filmDuration"><option value="15">15 seconds</option><option value="30">30 seconds</option><option value="60">60 seconds</option><option value="120">2 minutes</option><option value="300">5 minutes</option><option value="600">10 minutes</option></select></label>
+   <label>Aspect ratio<select id="filmAspect"><option value="portrait">9:16 · Vertical</option><option value="landscape">16:9 · Landscape</option><option value="square">1:1 · Square</option></select></label></div>
+   <label>Project type<select id="filmGenre"><option>Commercial</option><option>Explainer</option><option>Short Film</option><option>Documentary</option><option>Social Ad</option><option>Product Film</option></select></label>
+   <div class="row"><span class="stat" id="sceneStats">Scenes: 0</span><span class="pill" id="durationPill">00:00</span></div>
+   <p class="minor">All drafts are saved only in this browser. The server does not receive your scripts or footage from this editor. Export a JSON backup before changing devices.</p>
+   <button id="saveBtn">Save draft locally</button>
+   <hr style="border:0;border-top:1px solid var(--line);width:100%">
+   <h2>02 / Audio production</h2>
+   <label>Narration / spoken voice<select id="voiceMode"><option value="none">Not assigned</option><option value="generate-local-draft">Free CPU draft TTS (robotic, review required)</option><option value="licensed-recording">Recorded, licensed voice file</option></select></label>
+   <label>Voice audio file reference<input id="voiceRef" placeholder="Approved WAV / recorded voice file"></label>
+   <label>Voice consent / license<input id="voiceRights" placeholder="Release or recording permission"></label>
+   <label>Music / soundtrack<select id="musicMode"><option value="none">Not assigned</option><option value="generate-original-draft">Free original ambient score draft</option><option value="licensed-track">Licensed music / composed soundtrack</option></select></label>
+   <label>Music file reference<input id="musicRef" placeholder="Approved WAV / MP3 file"></label>
+   <label>Music license reference<input id="musicRights" placeholder="Music license / creator permission"></label>
+   <label><input id="subtitles" type="checkbox" checked> Caption / subtitle plan</label>
+  </section>
+  <section class="panel">
+   <div class="row"><h2>03 / Scene timeline</h2><div class="cluster"><button id="addScene">+ Scene</button><button id="balance">Rebalance timing</button></div></div>
+   <div id="timeline" class="timeline" role="group" aria-label="Film storyboard scene timeline"></div>
+   <div class="row"><span id="timing" class="minor"></span><span class="minor">Click a bar or expand a shot to edit</span></div>
+   <div id="scenes"></div>
+   <div class="row" style="margin-top:20px"><button id="preflightBtn">Validate full production</button><span class="minor" id="savedAt">Unsaved draft</span></div>
+   <div class="status" id="validation" aria-live="polite">Project validation not yet run.</div>
+  </section>
+  <aside class="panel stack right">
+   <h2>04 / Review & delivery</h2>
+   <canvas id="storyboard" width="800" height="450" aria-label="Storyboard drawing, not an actual rendered movie"></canvas>
+   <div class="row"><span class="stat" id="previewState">Storyboard · 00:00</span><div class="cluster"><button id="playStory">Play animatic</button><button id="stopStory">Stop</button></div></div>
+   <p class="minor">Storyboard preview shows timings and shot directions only. It is NOT generated video and has no mastered voice or music. The actual MP4 must be produced by the rendering worker and visually reviewed.</p>
+   <div class="status" id="readiness">Checking timeline and assets…</div>
+   <h3>Production pipeline</h3>
+   <p>01 Script → 02 Shot selection → 03 Asset rights → 04 Dialogue/voice → 05 Music/SFX → 06 Render → 07 Human QA → 08 Download</p>
+   <button id="renderBtn" disabled>Full render unavailable until secure worker is connected</button>
+   <a class="btn" style="text-decoration:none" href="https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions" target="_blank" rel="noopener noreferrer">Open technical render jobs ↗</a>
+   <div class="status">Exporting JSON creates an editable production project, NOT a video. 2/5/10-minute projects need genuinely authored scenes and long-form footage/audio, not repeated 6-second loops.</div>
+  </aside>
+ </div>
+ <footer>DEVELOPMENT PREVIEW · Uses your existing Film Studio hosting when explicitly deployed. No GPU required to edit a project. No automatic public publishing or billable API calls.</footer>
+</main>
+<script type="module" src="/studio-app.mjs"></script>
+</body></html>
