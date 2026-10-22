@@ -1,0 +1,41 @@
+{
+  "schema": 1,
+  "title": "PEOPLE FIRST",
+  "goal": "Nonconfidential fifteen-second stock footage demo, no agency employee claims or fabricated metrics.",
+  "duration_seconds": 15,
+  "aspect": "landscape",
+  "public_demo": true,
+  "audio": {
+    "voice": "espeak-en",
+    "music": "original-ambient"
+  },
+  "scenes": [
+    {
+      "id": "shot-1",
+      "seconds": 5,
+      "asset": "mixkit-4610",
+      "in_point": 0,
+      "caption": "REAL CONVERSATIONS",
+      "narration": "Real connection starts with one conversation.",
+      "rights_approved": true
+    },
+    {
+      "id": "shot-2",
+      "seconds": 5,
+      "asset": "mixkit-4603",
+      "in_point": 0,
+      "caption": "PEOPLE FIRST",
+      "narration": "Good teams listen before they sell.",
+      "rights_approved": true
+    },
+    {
+      "id": "shot-3",
+      "seconds": 5,
+      "asset": "mixkit-4610",
+      "in_point": 5.5,
+      "caption": "BUILT ON TRUST",
+      "narration": "Bring a human touch to outreach.",
+      "rights_approved": true
+    }
+  ]
+}
