@@ -1,0 +1,163 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elijah Film Studio | Production Workspace</title>
+<style>
+:root{color-scheme:dark;--bg:#090e16;--panel:#111b29;--panel2:#152234;--line:#304155;--muted:#9eafc1;--ink:#f1f4f7;--gold:#e2bc80;--teal:#77cbcc}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -5%,#1b3547,transparent 56%),var(--bg);font:14px/1.5 Inter,ui-sans-serif,system-ui,sans-serif;color:var(--ink)}
+a{color:var(--gold)}button,select,input,textarea{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:not-allowed}.shell{max-width:1510px;margin:auto;padding:24px 30px 90px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px;padding-bottom:21px;border-bottom:1px solid var(--line);flex-wrap:wrap}.brand{letter-spacing:.14em;font-weight:800;font-size:13px}.top p{margin:4px 0 0;color:var(--muted);font-size:12px}.top a{font-size:12px;text-decoration:none}
+h1{font-size:clamp(28px,4vw,52px);margin:22px 0 8px;letter-spacing:-.05em}h2{font-size:17px;margin:0 0 16px;letter-spacing:-.02em}h3{font-size:14px;margin:0 0 12px}.sub{color:var(--muted);margin:0 0 24px}.layout{display:grid;grid-template-columns:minmax(0,1.32fr) minmax(320px,.68fr);gap:18px}.card{border:1px solid var(--line);border-radius:17px;background:var(--panel);padding:21px;margin-bottom:18px;min-width:0}
+.ribbon{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.step{border:1px solid #405368;background:#182637;padding:7px 12px;border-radius:100px;color:#d8e2e9;font-size:12px}.step b{color:var(--gold)}.badge{font-size:12px;border:1px solid #766341;color:#e6c98a;border-radius:40px;padding:5px 12px;background:#302718}
+label{display:block;color:#ccd7e2;font-size:12px;font-weight:600;margin-bottom:7px}input,textarea,select{width:100%;border:1px solid #3a5063;background:#0b1521;color:#f3f4f5;padding:11px 12px;border-radius:9px;outline:none}textarea{resize:vertical;min-height:78px}input:focus,select:focus,textarea:focus{border-color:var(--gold)}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.wide{grid-column:1/-1}.presetbar{display:flex;gap:7px;flex-wrap:wrap}.preset{background:#162435;border:1px solid #35495d;color:#dbe6ef;border-radius:9px;padding:9px 12px}.preset[aria-pressed=true]{background:#483b28;color:#ffdda5;border-color:#d9b170}.actions{display:flex;gap:10px;flex-wrap:wrap}.primary{background:var(--gold);color:#171511;font-weight:800;border:0;border-radius:10px;padding:12px 17px}.ghost{background:#1e2e40;border:1px solid #456073;color:#edf2f5;border-radius:10px;padding:11px 15px}.red{color:#efb7ad}.note{font-size:12px;color:var(--muted);line-height:1.6}.warning{border-left:3px solid #d5a359;background:#27231e;padding:12px 14px;border-radius:7px;margin:12px 0;color:#ecd9b9}
+.timeline{height:48px;display:flex;overflow:hidden;border-radius:9px;border:1px solid var(--line);background:#223140;margin:10px 0 16px}.bar{display:flex;align-items:center;justify-content:center;border-right:2px solid #101820;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:3px;font-size:10px;font-weight:750;padding:0 3px;color:#0e1620;cursor:pointer}.bar:nth-child(4n+1){background:#b8d7d6}.bar:nth-child(4n+2){background:#e4c48c}.bar:nth-child(4n+3){background:#a9bce1}.bar:nth-child(4n){background:#b9adc9}
+.shot{border:1px solid #34495a;background:#0c1724;border-radius:12px;padding:13px;margin:10px 0}.shotHead{display:flex;gap:12px;justify-content:space-between;align-items:center;margin-bottom:12px}.shotHead strong{color:#d8c091}.shotGrid{display:grid;grid-template-columns:82px 1fr 90px;gap:10px}.shot .micro{font-size:11px;color:var(--muted);margin:4px 0}.statusLine{padding:13px 15px;background:#0c1724;border:1px solid #394c5d;border-radius:10px;font-size:12px;white-space:pre-wrap;line-height:1.6}.good{color:#94dfbc}.bad{color:#ffc3bb}.rightList{margin:0;padding-left:20px;color:#becdda}.rightList li{margin:5px 0}.meter{background:#27384a;height:7px;border-radius:4px;overflow:hidden;margin:9px 0}.meter span{display:block;background:linear-gradient(90deg,#a0cabf,#e2bc80);height:100%}.job{padding:12px 0;border-bottom:1px solid #263848;font-size:12px}.job a{text-decoration:none}.job small{color:#9bafc0}.heroInline{font-size:12px;color:#d1dcea;border:1px solid #485260;background:#162331;padding:11px 13px;border-radius:10px}
+#errors{color:#ffd0c6}#warnings{color:#f4d9a9}code{color:#e2cfa8}.footer{font-size:12px;color:#96aabd;margin-top:20px}input[type=checkbox]{width:auto;accent-color:#d5b77b}input[type=file]{display:none}
+@media(max-width:1050px){.layout{grid-template-columns:1fr}.shell{padding:18px}}@media(max-width:600px){.fields,.shotGrid{grid-template-columns:1fr}.shell{padding:12px}.card{padding:14px}.shotGrid{gap:8px}h1{margin-top:14px}}
+</style></head><body><div class="shell">
+<div class="top"><div><div class="brand">◈ ELIJAH FILM STUDIO <span class="badge">PUBLIC DEMO BETA</span></div><p>Creative brief · Shot timeline · Voice &amp; music · Render queue · Quality review</p></div><div class="ribbon"><a href="/">← Control Room</a><a href="https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions" target="_blank" rel="noopener">GitHub render status ↗</a></div></div>
+<h1>Production Workspace</h1><p class="sub">Plan true-length films. Review assets, sound and edits before submitting a CPU render. A valid timeline is not automatically a finished movie.</p>
+<div class="ribbon" aria-label="workflow stages"><span class="step"><b>01</b> Project</span><span class="step"><b>02</b> Script &amp; shots</span><span class="step"><b>03</b> Footage &amp; rights</span><span class="step"><b>04</b> Voice &amp; music</span><span class="step"><b>05</b> Render</span><span class="step"><b>06</b> Review &amp; export</span></div>
+<div class="layout" style="margin-top:22px"><main>
+<section class="card"><h2>01 · Creative brief</h2><div class="fields">
+<div class="wide"><label for="title">Project title</label><input id="title" maxlength="80" value="IO Agency | Conversations that count" autocomplete="off"></div>
+<div class="wide"><label for="goal">Audience, message and direction</label><textarea id="goal" maxlength="500">A people-first sales and customer support concept using illustrative stock footage. No fabricated results or employee endorsements.</textarea></div>
+<div><label for="aspect">Output format</label><select id="aspect"><option value="landscape">Landscape · 16:9</option><option value="portrait">Vertical · 9:16</option><option value="square">Square · 1:1</option></select></div>
+<div><label for="duration">Duration (seconds; 5–3600)</label><input id="duration" type="number" min="5" max="3600" step="1" value="30"></div>
+<div class="wide"><label>Quick duration presets</label><div class="presetbar" id="presets">
+<button class="preset" type="button" data-sec="15">15 sec</button><button class="preset" type="button" data-sec="30">30 sec</button><button class="preset" type="button" data-sec="60">60 sec</button><button class="preset" type="button" data-sec="120">2 min</button><button class="preset" type="button" data-sec="300">5 min</button><button class="preset" type="button" data-sec="600">10 min</button></div></div>
+</div><p class="note">Custom planning up to 60 minutes. Single public CPU render requests currently capped at 10 minutes and may require segmenting; 5/10-minute films need a substantial cleared shot library.</p></section>
+<section class="card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap"><h2>02 · Shot-by-shot editing timeline</h2><button class="ghost" id="newScenes" type="button">Regenerate shot plan</button></div>
+<div id="timeline" class="timeline" aria-label="Click a shot to edit"></div>
+<div class="ribbon" style="justify-content:space-between"><span id="totalInfo" class="note"></span><span id="assetInfo" class="note"></span></div>
+<div id="shots"></div><button class="ghost" id="addShot" type="button">+ Add scene</button>
+<p class="note">Each scene needs a distinct, rights-cleared video segment, its own copy and duration. You can plan all lengths; long-form rendering remains blocked until sufficient unique footage is available.</p></section>
+<section class="card"><h2>03 · Narration and score</h2><div class="fields">
+<div><label for="voice">Voiceover engine</label><select id="voice"><option value="espeak-en">Free CPU voice (eSpeak, demo only)</option><option value="off">No voiceover</option><option value="recorded-voice">Recorded human (private media storage required)</option></select></div>
+<div><label for="music">Music &amp; audio</label><select id="music"><option value="original-ambient">Original synthesized score (free)</option><option value="off">No music</option><option value="licensed-track">Licensed file (private media storage required)</option></select></div></div>
+<div class="warning">The built-in eSpeak voice is intelligible but synthetic and not an approved professional advertising narrator. Recorded voice/music upload requires future authenticated private storage; this public prototype cannot handle client audio safely.</div><div class="heroInline">Scene narration is editable inside each shot. Mix voice and score on the rendering worker, not on Hostinger's website server.</div></section>
+<section class="card"><h2>04 · Save &amp; render</h2><div class="actions">
+<button class="primary" id="validate" type="button">Validate production project</button>
+<button class="ghost" id="save" type="button">Save draft in this browser</button>
+<button class="ghost" id="export" type="button">Download project JSON</button><label class="ghost" for="import" style="cursor:pointer;margin:0">Import project JSON</label><input type="file" id="import" accept=".json,application/json">
+</div><p class="note">Browser drafts are only saved on this device. Don't enter confidential client information: current GitHub render service is PUBLIC.</p>
+<div id="validateState" class="statusLine" role="status" aria-live="polite">Not validated yet.</div><div style="margin-top:15px" class="actions"><button class="primary" id="render" type="button">Submit public CPU render</button><button class="ghost" id="reloadJobs" type="button">Refresh render jobs</button></div><p id="renderState" class="note"></p></section>
+</main><aside>
+<section class="card"><h2>Project coverage</h2><div id="coverageText">Loading draft...</div><div class="meter"><span id="coverageBar" style="width:0%"></span></div><div class="note">A 600-second timeline composed of repeating footage is not a complete ten-minute film.</div><div id="errors"></div><div id="warnings"></div></section>
+<section class="card"><h2>Account &amp; render access</h2><div id="sessionState" class="statusLine">Checking permissions...</div><div id="loginWrap" style="display:none;margin-top:12px"><label for="password">Studio administrator password</label><input id="password" type="password" autocomplete="current-password"><button class="ghost" id="login" type="button" style="margin-top:8px">Sign in</button></div><p class="note">One-click renders require server-side Hostinger credentials and a scoped GitHub Actions token. Secrets must never be stored in project JSON.</p></section>
+<section class="card"><h2>Available footage</h2><div id="sources"></div><p class="note">Only individually verified free-license public stock assets can be rendered in this open demo. Model-generated media, uploads and private footage are not enabled.</p></section>
+<section class="card"><h2>Production jobs</h2><div id="jobs">Refresh to fetch GitHub jobs.</div></section>
+<section class="card"><h2>Review &amp; delivery</h2><ol class="rightList"><li>Script, pacing and shot uniqueness</li><li>Image quality and camera direction</li><li>Rights and subject releases</li><li>Audible voice, score and SFX</li><li>Final watch, captions and color</li><li>Explicit human publication approval</li></ol><p class="note">Rendering can succeed while creative approval remains blocked. No automatic publishing.</p></section>
+</aside></div><div class="footer">Elijah Film Studio · Development workspace · Public non-confidential demos only · No paid inference · No Daniel GPU</div>
+</div>
+<script>
+'use strict';
+const STORAGE='elijah-film-studio-project-beta-v1';
+const DEMOS={
+'mixkit-4610':{name:'Call center pair',page:'https://mixkit.co/free-stock-video/woman-and-man-working-at-a-call-center-4610/'},
+'mixkit-4603':{name:'Operators and headsets',page:'https://mixkit.co/free-stock-video/a-pair-of-employees-working-in-a-call-center-4603/'}
+};
+const $=id=>document.getElementById(id);
+const escapeHTML=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const minShots=s=>Math.ceil(s/18);
+function partition(seconds){if(!Number.isInteger(seconds)||seconds<5||seconds>3600)return[];const count=Math.max(minShots(seconds),Math.ceil(seconds/8));const d=Math.floor(seconds/count),r=seconds%count;return Array.from({length:count},(_,i)=>d+(i<r?1:0));}
+const make=(seconds=30)=>({schema:1,title:'IO Agency | Conversations that count',goal:'People-first sales and customer support. Illustrative stock actors, not agency employees.',duration_seconds:seconds,aspect:'landscape',public_demo:true,audio:{voice:'espeak-en',music:'original-ambient'},scenes:partition(seconds).map((n,i)=>({id:'shot-'+(i+1),seconds:n,asset:'unassigned',in_point:0,caption:['REAL CONVERSATIONS','PEOPLE FIRST','MORE HUMAN CONNECTION'][i%3],narration:'',rights_approved:false}))});
+let project=make();let session={};
+try{const v=localStorage.getItem(STORAGE);if(v){const z=JSON.parse(v);if(z&&Array.isArray(z.scenes))project=z;}}catch{}
+function save(){try{localStorage.setItem(STORAGE,JSON.stringify(project));return true;}catch{return false;}}
+function syncForm(){
+ $('title').value=project.title||'';$('goal').value=project.goal||'';$('duration').value=project.duration_seconds;$('aspect').value=project.aspect;
+ $('voice').value=project.audio?.voice||'off';$('music').value=project.audio?.music||'off';
+ document.querySelectorAll('[data-sec]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.sec)===project.duration_seconds?'true':'false'));
+}
+function renderTimeline(){
+ const t=$('timeline');t.replaceChildren();
+ for(const [i,s] of project.scenes.entries()){
+  const b=document.createElement('button');b.className='bar';b.type='button';b.style.flex=String(Math.max(1,s.seconds));
+  b.title=s.id+' · '+s.seconds+' sec · '+s.asset;b.textContent=i+1;
+  b.onclick=()=>document.getElementById('scene-'+i)?.scrollIntoView({behavior:'smooth',block:'center'});t.append(b);
+ }
+ $('totalInfo').textContent='Planned '+project.scenes.reduce((x,s)=>x+(Number(s.seconds)||0),0)+' / '+project.duration_seconds+' seconds · '+project.scenes.length+' shots';
+ const cleared=project.scenes.reduce((x,s)=>x+(s.asset in DEMOS&&s.rights_approved?Number(s.seconds)||0:0),0);
+ $('assetInfo').textContent=cleared+' sec verified stock footage';
+ $('coverageBar').style.width=Math.min(100,100*cleared/Math.max(1,project.duration_seconds))+'%';
+ $('coverageText').textContent='Shot asset coverage: '+Math.round(cleared/Math.max(1,project.duration_seconds)*100)+'% ('+cleared+'s licensed footage).';
+}
+function drawScenes(){
+ const root=$('shots');root.replaceChildren();
+ project.scenes.forEach((s,i)=>{
+  const card=document.createElement('div');card.className='shot';card.id='scene-'+i;
+  const options=[['unassigned','Choose footage...'],...Object.entries(DEMOS).map(([id,x])=>[id,x.name])]
+    .map(([id,name])=>'<option value="'+escapeHTML(id)+'" '+(s.asset===id?'selected':'')+'>'+escapeHTML(name)+'</option>').join('');
+  card.innerHTML='<div class="shotHead"><strong>SHOT '+String(i+1).padStart(2,'0')+'</strong><span class="note">'+escapeHTML(s.id)+'</span><button class="ghost red remove" type="button">Remove</button></div>'+
+   '<div class="shotGrid"><div><label>Duration s</label><input class="seconds" type="number" min="2" max="18" step="1" value="'+escapeHTML(s.seconds)+'"></div>'+
+   '<div><label>Licensed media</label><select class="asset">'+options+'</select></div>'+
+   '<div><label>In-point s</label><input class="in" type="number" min="0" step=".25" value="'+escapeHTML(s.in_point)+'"></div></div>'+
+   '<div style="margin-top:10px"><label>On-screen message (max 130 characters)</label><input class="caption" maxlength="130" value="'+escapeHTML(s.caption)+'"></div>'+
+   '<div style="margin-top:10px"><label>Voiceover line (max 450 characters)</label><textarea class="narration" maxlength="450" rows="2">'+escapeHTML(s.narration)+'</textarea></div>'+
+   '<label style="margin-top:9px"><input type="checkbox" class="rights" '+(s.rights_approved?'checked':'')+'> I have reviewed and accepted this source\'s applicable rights for this public demo</label>';
+  const listen=(cls,key,trans=v=>v)=>card.querySelector('.'+cls).addEventListener('change',e=>{s[key]=trans(e.target.type==='checkbox'?e.target.checked:e.target.value);update();});
+  listen('seconds','seconds',Number);listen('asset','asset');listen('in','in_point',Number);listen('caption','caption');listen('narration','narration');listen('rights','rights_approved');
+  card.querySelector('.remove').addEventListener('click',()=>{project.scenes.splice(i,1);drawScenes();update();});
+  root.append(card);
+ });
+ renderTimeline();
+}
+function update(){
+ project.title=$('title').value;project.goal=$('goal').value;project.aspect=$('aspect').value;
+ project.audio={voice:$('voice').value,music:$('music').value};
+ save();renderTimeline();document.querySelectorAll('[data-sec]').forEach(b=>b.setAttribute('aria-pressed',Number(b.dataset.sec)===project.duration_seconds?'true':'false'));
+ $('validateState').textContent='Edited. Run validation before rendering.';
+}
+for(const id of ['title','goal','aspect','voice','music'])$(id).addEventListener('change',update);
+function changeDuration(n){
+ if(!Number.isInteger(n)||n<5||n>3600){$('validateState').textContent='Duration must be 5 to 3600 seconds';return;}
+ project.duration_seconds=n;
+ const lengths=partition(n),previous=project.scenes;
+ project.scenes=lengths.map((seconds,i)=>({...previous[i],id:'shot-'+(i+1),seconds,asset:previous[i]?.asset||'unassigned',
+   in_point:previous[i]?.in_point||0,caption:previous[i]?.caption||'',narration:previous[i]?.narration||'',rights_approved:previous[i]?.rights_approved||false}));
+ $('duration').value=n;drawScenes();update();
+}
+document.querySelectorAll('[data-sec]').forEach(b=>b.onclick=()=>changeDuration(Number(b.dataset.sec)));
+$('duration').addEventListener('change',()=>changeDuration(Number($('duration').value)));
+$('newScenes').onclick=()=>{project.scenes=make(project.duration_seconds).scenes;drawScenes();update();};
+$('addShot').onclick=()=>{if(project.scenes.length>=500)return alert('500 shot planning limit');project.scenes.push({id:'shot-'+(Date.now()%9999999),seconds:2,asset:'unassigned',in_point:0,caption:'',narration:'',rights_approved:false});drawScenes();update();};
+$('save').onclick=()=>{$('validateState').textContent=save()?'Saved in this browser':'Local draft saving unavailable';};
+$('export').onclick=()=>{update();const b=new Blob([JSON.stringify(project,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='elijah-film-studio-project.json';a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);};
+$('import').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f||f.size>120000)return alert('Invalid or oversized JSON');try{const p=JSON.parse(await f.text());if(!Array.isArray(p.scenes)||p.scenes.length>500)throw Error('Invalid scene list');project=p;syncForm();drawScenes();update();}catch(e){alert('Could not import project: '+e.message);}});
+$('sources').innerHTML=Object.entries(DEMOS).map(([key,x])=>'<div class="job"><b>'+escapeHTML(x.name)+'</b><br><small>'+key+' · Free-License stock demo</small><br><a target="_blank" rel="noopener" href="'+escapeHTML(x.page)+'">Review license &amp; clip ↗</a></div>').join('');
+async function jsonResponse(url,options){const r=await fetch(url,options);const j=await r.json();if(!r.ok)throw Error(j.error||'Server error '+r.status);return j;}
+async function validate(){
+ update();$('validateState').textContent='Validating shot coverage, audio and rights...';
+ try{const data=await jsonResponse('/api/studio/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(project)});
+  $('errors').innerHTML=data.render.errors.length?'<h3>Render blockers</h3><ul>'+data.render.errors.map(s=>'<li>'+escapeHTML(s)+'</li>').join('')+'</ul>':'<p class="good">Render requirements passed</p>';
+  $('warnings').innerHTML=data.render.warnings.length?'<h3>Production warnings</h3><ul>'+data.render.warnings.map(s=>'<li>'+escapeHTML(s)+'</li>').join('')+'</ul>':'';
+  $('validateState').textContent=(data.plan.ok?'Timeline valid':'Timeline needs fixes')+'. '+(data.render.ok?'Eligible for public CPU render':'Not ready for actual render; see blockers')+'.';
+  return data.render.ok;
+ }catch(e){$('validateState').textContent='Unable to validate on server: '+e.message;return false;}
+}
+$('validate').onclick=validate;
+async function refreshSession(){
+ try{session=await jsonResponse('/api/session');
+ $('sessionState').textContent=session.login_enabled?
+ (session.authenticated?'Signed in. '+(session.dispatch_enabled?'Public render dispatch configured':'GitHub dispatch token unavailable'):'Studio login enabled; sign in to launch jobs'):
+ 'Viewer mode. Studio admin password is not configured on Hostinger; rendering launch is locked.';
+ $('loginWrap').style.display=session.login_enabled&&!session.authenticated?'block':'none';
+ }catch(e){$('sessionState').textContent='Session status unavailable: '+e.message;}
+}
+$('login').onclick=async()=>{
+ try{await jsonResponse('/api/session',{method:'POST',headers:{'Content-Type':'application/json','X-Studio-Action':'1'},body:JSON.stringify({password:$('password').value})});$('password').value='';await refreshSession();}
+ catch(e){$('sessionState').textContent='Login failed: '+e.message;}
+};
+$('render').onclick=async()=>{
+ const ok=await validate();if(!ok){$('renderState').textContent='Render blocked by incomplete timeline/media/audio. Fix the listed issues.';return;}
+ if(!session.authenticated||!session.dispatch_enabled){$('renderState').textContent='Cannot launch: server credentials not configured or login required. Save/download the project. Never paste tokens here.';return;}
+ $('renderState').textContent='Submitting approved public CPU render...';
+ try{const d=await jsonResponse('/api/studio/render',{method:'POST',headers:{'Content-Type':'application/json','X-Studio-Action':'1'},body:JSON.stringify({project})});
+ $('renderState').textContent=d.accepted?'GitHub accepted the project. Use Production Jobs to watch the actual run.':'Request not accepted.';
+ await refreshJobs();
+ }catch(e){$('renderState').textContent='Render request rejected: '+e.message;}
+};
+async function refreshJobs(){try{const d=await jsonResponse('/api/jobs');$('jobs').replaceChildren();if(!d.jobs?.length){$('jobs').textContent='No public demo jobs yet.';return;}
+ for(const j of d.jobs.slice(0,8)){const div=document.createElement('div');div.className='job';const a=document.createElement('a');a.href=j.url;a.target='_blank';a.rel='noopener';a.textContent=(j.name||'Production job')+' #'+j.id;div.append(a);const s=document.createElement('div');s.textContent=(j.status||'unknown')+' · '+(j.conclusion||'pending');div.append(s);$('jobs').append(div);}
+ }catch(e){$('jobs').textContent='Job history unavailable: '+e.message;}}
+$('reloadJobs').onclick=refreshJobs;
+syncForm();drawScenes();refreshSession();refreshJobs();
+</script></body></html>
