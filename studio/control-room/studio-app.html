@@ -48,6 +48,9 @@ audio{max-width:100%}footer{margin-top:42px;color:#95a4b8;font-size:12px}
    <div class="row"><span class="stat" id="sceneStats">Scenes: 0</span><span class="pill" id="durationPill">00:00</span></div>
    <p class="minor">All drafts are saved only in this browser. The server does not receive your scripts or footage from this editor. Export a JSON backup before changing devices.</p>
    <button id="saveBtn">Save draft locally</button>
+   <button id="saveServer" disabled>Save project to private Studio storage</button>
+   <div class="row"><select id="savedProjects" aria-label="Saved private Studio projects"><option value="">No server projects available</option></select><button id="loadServer" disabled>Open</button></div>
+   <div class="minor" id="storeStatus">Checking secure project storage. Private server saving requires an authenticated Studio account and private storage path.</div>
    <hr style="border:0;border-top:1px solid var(--line);width:100%">
    <h2>02 / Audio production</h2>
    <label>Narration / spoken voice<select id="voiceMode"><option value="none">Not assigned</option><option value="generate-local-draft">Free CPU draft TTS (robotic, review required)</option><option value="licensed-recording">Recorded, licensed voice file</option></select></label>
