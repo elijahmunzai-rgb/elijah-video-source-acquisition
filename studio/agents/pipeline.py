@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime,timezone
 
 ROLES=["director","scriptwriter","storyboard","rights","camera-vfx","motion","audio","qa"]
-ASPECTS={"landscape":(640,360),"portrait":(360,640),"square":(480,480)}
+ASPECTS={"landscape":(1920,1080),"portrait":(1080,1920),"square":(1080,1080)}
 BEATS=["HOOK","WORLD","CHARACTER","GOAL","PROBLEM","DISCOVERY","TURN","PROOF","RESOLUTION","CLOSE"]
 def brief(title,goal,duration,aspect,public):
     if not public:raise ValueError("Only approved PUBLIC demo briefs")
@@ -20,16 +20,22 @@ def director(b):
              "camera":["locked","push","orbit","lateral","detail"][i%5],
              "asset_verified":False} for i in range(n)]
 def motion(b):
+    """Metadata for the original 1080p editorial-preview renderer.
+
+    The final MP4 is produced by premium_preview.py, not the legacy JSON
+    graphics renderer. Keep this manifest truthful about the content.
+    """
     w,h=ASPECTS[b["aspect"]]
-    def txt(t,y):return {"type":"text","text":t,"x":.5,"y":y,
-                         "size":min(32,w//11),"max_width":.8,"animation":{"in":"rise","out":"none"}}
-    return {"canvas":{"width":w,"height":h,"fps":24},
-      "theme":{"background":"#0B1422","foreground":"#F1EEDF","accent":"#D2AC74"},
-      "scenes":[{"duration":2,"layers":[txt("ELIJAH FILM STUDIO",.2),txt(b["title"],.55)]},
-                {"duration":2,"layers":[txt("DIRECTOR  CAMERA  VFX",.43),
-                    {"type":"orbit","x":.5,"y":.65,"r":.15,"animation":{"out":"none"}}]},
-                {"duration":2,"layers":[txt("CPU FIRST - NO PAID API",.43),
-                  txt("PREVIEW ONLY",.67)]}]}
+    return {"renderer":"studio/agents/premium_preview.py",
+      "preview_type":"original editorial motion graphics (NOT photoreal film)",
+      "canvas":{"width":w,"height":h,"fps":24},
+      "audio":{"type":"original synthesized ambient soundtrack","copyright_cleared":True},
+      "brief_title":b["title"],"brief_goal":b["goal"],
+      "scenes":[
+        {"duration":2,"purpose":"Imagine / story establishes visual world"},
+        {"duration":2,"purpose":"Compose / kinetic typography and moving 3D-inspired layers"},
+        {"duration":2,"purpose":"Create / public demo title and creative goal"}]}
+
 def store(p,x):p.write_text(json.dumps(x,indent=2,ensure_ascii=False)+"\n")
 def build(b,out):
     out=Path(out);out.mkdir(parents=True,exist_ok=True)
@@ -43,7 +49,7 @@ def build(b,out):
     audio={"approved_narration":False,"approved_music":False,"stems":["dialogue","music","sfx"]}
     spec=motion(b)
     qa={"preflight":True,"full_film_rendered":False,"preview_only":True,
-        "public_publish_approved":False,
+        "public_publish_approved":False,"visual_quality_review_required":True,
         "duration_correct":math.isclose(sum(s["duration"] for s in shots),b["duration"]),
         "unique_shots":len({s["id"] for s in shots})==len(shots)}
     if not qa["duration_correct"] or not qa["unique_shots"]:raise RuntimeError("QA failed")
@@ -62,7 +68,8 @@ def build(b,out):
     hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in out.iterdir() if p.is_file()}
     store(out/"manifest.json",{"role_agents":ROLES,"no_llm_or_model_weights":True,
         "no_gpu":True,"no_paid_api":True,"full_film_rendered":False,
-        "preview_duration":6,"utc":datetime.now(timezone.utc).isoformat(),
+        "preview_duration":6,"preview_canvas":spec["canvas"],
+        "preview_type":spec["preview_type"],"utc":datetime.now(timezone.utc).isoformat(),
         "files_sha256":hashes})
     return out
 def main():
