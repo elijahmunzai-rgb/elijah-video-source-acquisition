@@ -34,7 +34,7 @@ permissions:
   contents: read
 concurrency:
   group: film-agent-team-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   agent-team:
     runs-on: ubuntu-latest
