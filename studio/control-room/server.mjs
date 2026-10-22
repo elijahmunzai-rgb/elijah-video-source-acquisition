@@ -6,6 +6,9 @@ const REPO = 'elijahmunzai-rgb/elijah-video-source-acquisition';
 const ACTIONS_URL = 'https://github.com/' + REPO + '/actions';
 const API_URL = 'https://api.github.com/repos/' + REPO + '/actions/runs?per_page=12';
 const html = await readFile(new URL('./index.html', import.meta.url), 'utf8');
+const studioHtml = await readFile(new URL('./studio-app.html', import.meta.url), 'utf8');
+const studioScript = await readFile(new URL('./studio-app.mjs', import.meta.url), 'utf8');
+const projectSchema = await readFile(new URL('./project-schema.mjs', import.meta.url), 'utf8');
 
 function secure(res, type) {
   res.setHeader('Content-Type', type);
@@ -14,7 +17,7 @@ function secure(res, type) {
   res.setHeader('Cache-Control', 'no-store');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('Content-Security-Policy',
-    "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; " +
+    "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'unsafe-inline'; " +
     "connect-src 'self'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'");
 }
 function json(res, code, data) {
@@ -53,6 +56,14 @@ export function createServer({fetcher = fetch, cacheMs = 60_000, operatorEnv = p
       secure(res, 'text/html; charset=utf-8');
       res.end(req.method === 'HEAD' ? '' : html);
       return;
+    }
+    if (pathname === '/studio' || pathname === '/studio/') {
+      res.statusCode=200;secure(res,'text/html; charset=utf-8');
+      res.end(req.method==='HEAD'?'':studioHtml);return;
+    }
+    if (pathname === '/studio-app.mjs' || pathname === '/project-schema.mjs') {
+      res.statusCode=200;secure(res,'text/javascript; charset=utf-8');
+      res.end(req.method==='HEAD'?'':pathname==='/studio-app.mjs'?studioScript:projectSchema);return;
     }
     if (pathname === '/api/status') {
       if (cached && Date.now() < expires) {
