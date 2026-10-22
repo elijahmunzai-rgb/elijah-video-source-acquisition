@@ -51,7 +51,7 @@ function sceneInput(index,key,{long=false,placeholder='',label='',type='text'}={
  el.value=String(project.scenes[index][key]??'');
  el.placeholder=placeholder;if(!long)el.maxLength=900;
  el.addEventListener('input',()=>{
-  const val=key==='duration'?Number(el.value):el.value;
+  const val=(key==='duration'||key==='source_in')?Number(el.value):el.value;
   updateScene(index,key,val,key==='duration');
  });
  wrap.append(el);return wrap;
@@ -68,6 +68,7 @@ function refreshScenes(){
   const pair=node('div','pair');pair.append(sceneInput(i,'beat',{label:'Story beat',placeholder:'Hook / conflict / reveal'}),sceneInput(i,'duration',{label:'Seconds in shot',type:'number'}));
   body.append(pair,sceneInput(i,'direction',{label:'Scene direction and action',long:true,placeholder:'What actually happens in this shot? Character, camera, action and story...'}));
   body.append(sceneInput(i,'media_ref',{label:'Real source footage / scene asset',placeholder:'Approved original video file or Blender render path'}));
+  body.append(sceneInput(i,'source_in',{label:'Start inside source footage (seconds)',type:'number',placeholder:'0'}));
   body.append(sceneInput(i,'media_rights',{label:'License / release reference',placeholder:'Creator, source license or written permission'}));
   const line=node('div','pair');line.append(sceneInput(i,'camera',{label:'Camera / VFX',placeholder:'Tracking / wide / close-up'}),sceneInput(i,'caption',{label:'On-screen subtitle / copy',placeholder:'Short purposeful copy'}));
   body.append(line,sceneInput(i,'narration',{label:'Voiceover / dialogue for this shot',long:true,placeholder:'Spoken words (audio assigned separately)'}));
@@ -79,7 +80,7 @@ function refreshScenes(){
   del.addEventListener('click',()=>{if(project.scenes.length<2)return;project.scenes.splice(i,1);project=rebalance(project);save();refreshScenes();drawTimeline();showReadiness();});
   const duplicate=node('button',null,'Add shot after');
   duplicate.addEventListener('click',()=>{if(project.scenes.length>=Math.min(120,project.duration))return;
-   project.scenes.splice(i+1,0,{id:'scene-'+Date.now().toString(36)+'-'+i,duration:1,beat:'NEW SHOT',direction:'',media_ref:'',media_rights:'',camera:'',narration:'',caption:'',reviewed:false});
+   project.scenes.splice(i+1,0,{id:'scene-'+Date.now().toString(36)+'-'+i,duration:1,beat:'NEW SHOT',direction:'',media_ref:'',source_in:0,media_rights:'',camera:'',narration:'',caption:'',reviewed:false});
    project=rebalance(project);save();refreshScenes();drawTimeline();showReadiness();});
   tools.append(reviewed,duplicate,del);body.append(tools);d.append(body);root.append(d);
  });
@@ -158,7 +159,7 @@ for(const id of ['filmTitle','filmAspect','filmGenre','voiceMode','voiceRef','vo
 $('newProject').addEventListener('click',()=>{if(!confirm('Start a new locally stored draft? Export your current project first.'))return;stop();project=startProject();save();rebuild();});
 $('balance').addEventListener('click',()=>{capture();try{project=rebalance(project);save();refreshScenes();drawTimeline();drawPreview();showReadiness();}catch(e){$('validation').textContent=errText(e);}});
 $('addScene').addEventListener('click',()=>{if(project.scenes.length>=Math.min(120,project.duration))return;
- project.scenes.push({id:'scene-'+Date.now().toString(36),duration:1,beat:'NEW SHOT',direction:'',media_ref:'',media_rights:'',camera:'',narration:'',caption:'',reviewed:false});
+ project.scenes.push({id:'scene-'+Date.now().toString(36),duration:1,beat:'NEW SHOT',direction:'',media_ref:'',source_in:0,media_rights:'',camera:'',narration:'',caption:'',reviewed:false});
  project=rebalance(project);save();refreshScenes();drawTimeline();showReadiness();});
 $('saveBtn').addEventListener('click',()=>{capture();save();});
 $('downloadBtn').addEventListener('click',exportJson);
