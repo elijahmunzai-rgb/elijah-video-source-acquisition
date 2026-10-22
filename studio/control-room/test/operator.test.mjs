@@ -89,3 +89,25 @@ test('extract only bounded valid MP4, reject bad redirect',async()=>{
  assert.throws(()=>extractPreview(mkZip('other.mp4',mp4)),/not found/);
  await assert.rejects(()=>readDemoMp4({api:'https://api.github.com/repos/test/test',artifactId:12,token:'test',fetcher:async()=>new Response(null,{status:302,headers:{Location:'https://attacker.example/evil'}})}),/Untrusted/);
 });
+
+
+test('signed-in preview streams bounded MP4 ranges and direct download',async()=>{
+ const mp4=Buffer.concat([Buffer.from([0,0,0,24]),Buffer.from('ftypisom000000000000000000')]),archive=mkZip('preview-6s.mp4',mp4);
+ const fetcher=async(url)=>{
+  if(url.endsWith('/actions/runs/123'))return new Response(JSON.stringify(RUN),{status:200});
+  if(url.includes('/actions/runs/123/artifacts?'))return new Response(JSON.stringify({artifacts:[{id:42,name:'public-demo-studio-agents-storyboard-preview',expired:false}]}),{status:200});
+  if(url.endsWith('/actions/artifacts/42/zip'))return new Response(null,{status:302,headers:{Location:'https://results-receiver.actions.githubusercontent.com/approved.zip'}});
+  if(url==='https://results-receiver.actions.githubusercontent.com/approved.zip')return new Response(archive,{status:200});
+  throw new Error('Unexpected external URL '+url);
+ };
+ const env=await app(fetcher,{STUDIO_ADMIN_PASSWORD:PASSWORD,GITHUB_STUDIO_TOKEN:GH});
+ try{
+  const cookie=await login(env);
+  const v=await fetch(env.url+'/api/jobs/123/preview',{headers:{Cookie:cookie,Range:'bytes=0-9'}});
+  assert.equal(v.status,206);assert.equal(v.headers.get('content-range'),'bytes 0-9/'+mp4.length);
+  assert.deepEqual(Buffer.from(await v.arrayBuffer()),mp4.subarray(0,10));
+  const d=await fetch(env.url+'/api/jobs/123/download',{headers:{Cookie:cookie}});
+  assert.equal(d.status,200);assert.match(d.headers.get('content-disposition'),/attachment/);
+  assert.deepEqual(Buffer.from(await d.arrayBuffer()),mp4);
+ }finally{await env.stop();}
+});
