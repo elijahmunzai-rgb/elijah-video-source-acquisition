@@ -18,7 +18,7 @@ permissions:
   contents: read
 concurrency:
   group: studio-full-film-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   render-and-validate:
     if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition'
@@ -51,8 +51,13 @@ jobs:
           JS
       - name: Prepare verified free CPU media utilities
         run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v espeak-ng >/dev/null; then
+            timeout 150 sudo apt-get update -qq
+            timeout 180 sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
+          fi
+          command -v ffmpeg
+          command -v espeak-ng
           ffmpeg -hide_banner -filters | grep -E 'drawtext|loudnorm'
       - name: Resolve one owner-approved public project or 15s standalone test
         env:
