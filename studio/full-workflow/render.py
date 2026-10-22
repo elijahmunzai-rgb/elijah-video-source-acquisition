@@ -60,7 +60,7 @@ def validate(project):
     if audio.get("voice") not in ("off","espeak-en") or audio.get("music") not in ("off","original-ambient"):
         raise ValueError("Custom/private audio is unavailable in this public worker")
     if audio["voice"]=="off" and audio["music"]=="off":raise ValueError("Audio is missing")
-    ids=set();ranges=set();visual=0;assets=set()
+    ids=set();ranges=set();visual=0;assets=set();intervals={}
     for s in scenes:
         if not isinstance(s,dict):raise ValueError("Scene must be object")
         shot_id=s.get("id")
@@ -78,6 +78,11 @@ def validate(project):
         overlap=(asset,round(float(start),2),n)
         if overlap in ranges:raise ValueError("Duplicate exact source media interval (fake loop)")
         ranges.add(overlap);assets.add(asset)
+        start_f=float(start); end_f=start_f+n
+        earlier=intervals.setdefault(asset,[])
+        if any(start_f<e-.05 and end_f>st+.05 for st,e in earlier):
+            raise ValueError("Overlapping recorded footage interval: use unique source moments")
+        earlier.append((start_f,end_f))
         for k,limit in (("caption",130),("narration",450)):
             if not isinstance(s.get(k,""),str) or len(s.get(k,""))>limit:raise ValueError("Invalid scene text")
         visual+=n
