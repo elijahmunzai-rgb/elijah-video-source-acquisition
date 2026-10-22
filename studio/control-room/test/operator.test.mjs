@@ -53,7 +53,7 @@ test('operator login, CSRF gate and approved demo job dispatch',async()=>{
   const good={title:'A NEW FRAME',goal:'Approved generic public demo',duration:'30',aspect:'landscape',public_demo:true};
   const invalid=await writeReq(env,'/api/jobs',{...good,public_demo:false},cookie);assert.equal(invalid.status,400);
   const r=await writeReq(env,'/api/jobs',good,cookie);assert.equal(r.status,202);
-  assert.equal(called,1);assert.deepEqual(submitted,{ref:'main',inputs:{title:'A NEW FRAME',goal:'Approved generic public demo',duration:'30',aspect:'landscape'}});
+  assert.equal(called,1);assert.deepEqual(submitted,{ref:'studio-operator-phase2-20261022',inputs:{title:'A NEW FRAME',goal:'Approved generic public demo',duration:'30',aspect:'landscape'}});
   const s=await (await fetch(env.url+'/api/session',{headers:{Cookie:cookie}})).json();assert.equal(s.authenticated,true);
   const quit=await writeReq(env,'/api/logout',{},cookie);assert.equal(quit.status,200);
   const after=await writeReq(env,'/api/jobs',good,cookie);assert.equal(after.status,401);
