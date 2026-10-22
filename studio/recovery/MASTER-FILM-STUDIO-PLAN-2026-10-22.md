@@ -1,6 +1,8 @@
 # ELIJAH FILM STUDIO: FULL PRIOR-CHAT RECOVERY AND QUALITY-FIRST MASTER SPEC
 **Recovery date: 2026-10-22; owner requests continuation of "Coding Video Creation" with zero paid subscriptions.**
 
+**New primary-source addendum (pasted prior chat + actual ChatGPT skill inventory):** [USER-PASTED-CHAT-EVIDENCE-2026-10-22.md](./USER-PASTED-CHAT-EVIDENCE-2026-10-22.md). It confirms early Video Production Mastery V1 with one director + 15 specialist skills, later 318-source V2 goal, actual installed skills (32 general Video Production Mastery, 27 Elijah Video Production Mastery, 15 overlapping Asset Governance; 74 entries total), historical Hostinger resource figures, IO AI Browser-only preference, zero paid services and GPU-last rule. The current system should reuse existing installed skill groups rather than create redundant fresh plugins.
+
 This document consolidates the available prior conversation recovery with original repository handovers, pinned historical 318-source index and current tested work. The complete text of every earlier chat message was NOT available verbatim. **Never treat this as evidence every planned feature is completed.** Supersede any prior promise that code compiling or MP4 encoding proves high-quality filmmaking.
 
 ## 1. Original approved vision (binding requirements)
