@@ -1,7 +1,7 @@
 name: Package Hostinger Film Studio Staging Web App (no secrets)
 on:
   push:
-    branches: [studio-control-room-staging-20261022, studio-operator-phase2-20261022]
+    branches: [studio-control-room-staging-20261022, studio-operator-phase2-20261022, film-studio-full-duration-app-20261022]
     paths:
       - 'studio/control-room/**'
       - '.github/workflows/film-hostinger-upload-package.yml'
@@ -24,19 +24,19 @@ jobs:
         run: |
           mkdir -p release
           cd studio/control-room
-          test -f package.json && test -f server.mjs && test -f index.html && test -f operator.mjs && test -f media.mjs
-          node --check server.mjs && node --check operator.mjs && node --check media.mjs
+          test -f package.json && test -f server.mjs && test -f index.html && test -f operator.mjs && test -f media.mjs && test -f studio-app.html && test -f studio-app.mjs && test -f project-schema.mjs
+          node --check server.mjs && node --check operator.mjs && node --check media.mjs && node --check studio-app.mjs && node --check project-schema.mjs
           node -e "let p=require('./package.json');if(p.scripts.start!=='node server.mjs')process.exit(1)"
-          zip -q -j ../../release/Elijah-Film-Studio-Hostinger-Staging.zip package.json server.mjs index.html operator.mjs media.mjs
+          zip -q -j ../../release/Elijah-Film-Studio-Full-Duration-Staging.zip package.json server.mjs index.html operator.mjs media.mjs studio-app.html studio-app.mjs project-schema.mjs
           cd ../..
-          test "$(unzip -Z1 release/Elijah-Film-Studio-Hostinger-Staging.zip | wc -l)" -eq 5
-          unzip -Z1 release/Elijah-Film-Studio-Hostinger-Staging.zip
+          test "$(unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip | wc -l)" -eq 8
+          unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip
           sha256sum release/*.zip > release/SHA256SUMS.txt
           echo "No paid service, no runtime secrets, and no customer footage in this artifact."
       - name: Export Hostinger upload-ready ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: hostinger-staging-upload-ready-zip
+          name: film-studio-full-duration-hostinger-staging-zip
           path: release/
           if-no-files-found: error
           retention-days: 30
