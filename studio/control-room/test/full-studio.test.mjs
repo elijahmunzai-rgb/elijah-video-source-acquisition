@@ -75,7 +75,7 @@ test('studio web page and capability API served with no token and safe headers',
 test('actual project launch requires login, origin, approved footage and scoped GitHub dispatch',async()=>{
  let called=0,body=null;
  const fetcher=async(url,options)=>{
-  if(url.includes('/dispatches')){called++;body=JSON.parse(options.body);return new Response(null,{status:204});}
+  if(url.includes('/contents/studio/full-workflow/requests/')){called++;body=JSON.parse(options.body);return new Response('{}',{status:201});}
   throw Error('Unexpected URL '+url);
  };
  const env=await app(fetcher,{STUDIO_ADMIN_PASSWORD:password,GITHUB_STUDIO_TOKEN:GH});
@@ -88,8 +88,8 @@ test('actual project launch requires login, origin, approved footage and scoped 
   const success=await post(env.url+'/api/studio/render',{project:good15},cookie);
   assert.equal(success.status,202);
   assert.equal(called,1);
-  assert.equal(body.ref,'studio-operator-phase2-20261022');
-  assert.equal(body.inputs.spec_json&&JSON.parse(body.inputs.spec_json).duration_seconds,15);
+  assert.equal(body.branch,'studio-operator-phase2-20261022');
+  assert.equal(JSON.parse(Buffer.from(body.content,'base64').toString('utf8')).duration_seconds,15);
   const cross=await fetch(env.url+'/api/studio/render',{method:'POST',
     headers:{'Origin':'https://evil.example','X-Studio-Action':'1','Content-Type':'application/json',Cookie:cookie},
     body:JSON.stringify({project:good15})});
