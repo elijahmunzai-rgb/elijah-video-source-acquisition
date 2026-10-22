@@ -1,0 +1,164 @@
+name: Film Studio 318 activation / Batch B - free CPU video editor and production toolkit
+on:
+  push:
+    branches: [film-318-runtime-activation-20261022]
+    paths:
+      - '.github/workflows/film-318-operational-batch-b.yml'
+      - 'studio/318-activation/batch-b/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: film-318-activation-batch-b
+  cancel-in-progress: true
+jobs:
+  showtime-offline-project:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Exact pinned source and upstream MIT licensing
+        run: |
+          git -c protocol.file.allow=never clone --quiet https://github.com/FavioVazquez/showtime.git /tmp/showtime
+          cd /tmp/showtime
+          git checkout --quiet --detach 2efdb115bec3c8024b766dd93044619cd7ee00f7
+          test "$(git rev-parse HEAD)" = 2efdb115bec3c8024b766dd93044619cd7ee00f7
+          grep -qi 'MIT' LICENSE
+      - name: Run real upstream stdlib diagram and caption source tests
+        working-directory: /tmp/showtime/skills/showtime
+        env:
+          SHOWTIME_HOME: ${{ runner.temp }}/showtime-readonly
+        run: |
+          python tests/test_figure_examples.py --fast -v
+          python tests/test_figure_computer.py --fast -v
+      - name: Execute Showtime actual project generator with no paid services
+        env:
+          SHOWTIME_HOME: ${{ runner.temp }}/showtime-readonly
+        run: |
+          mkdir -p showtime-proof
+          python /tmp/showtime/skills/showtime/lib/st/launcher.py new diagram \
+            "${RUNNER_TEMP}/showtime-proof-project" --example typewriter --theme white
+          test -s "${RUNNER_TEMP}/showtime-proof-project/showtime.json"
+          test -s "${RUNNER_TEMP}/showtime-proof-project/index.html"
+          cp "${RUNNER_TEMP}/showtime-proof-project/showtime.json" showtime-proof/
+          cp "${RUNNER_TEMP}/showtime-proof-project/index.html" showtime-proof/
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          cfg=json.loads(Path('showtime-proof/showtime.json').read_text())
+          assert cfg.get('duration',0)>0
+          assert Path('showtime-proof/index.html').stat().st_size>400
+          Path('showtime-proof/RUNTIME-RESULT.json').write_text(json.dumps({
+            'upstream':'FavioVazquez/showtime',
+            'sha':'2efdb115bec3c8024b766dd93044619cd7ee00f7',
+            'result':'project-generator actually executed; source tests passed',
+            'full_mp4_render_tested':False,
+            'film_studio_integrated':False,
+            'paid_services_used':False
+          },indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: showtime-real-project-generator-proof
+          path: showtime-proof/
+          retention-days: 14
+
+  digital-samba-offline-editor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install free system FFmpeg
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+      - name: Clone pinned upstream MIT source without credentials
+        run: |
+          git -c protocol.file.allow=never clone --quiet https://github.com/digitalsamba/claude-code-video-toolkit.git /tmp/digital-samba
+          cd /tmp/digital-samba
+          git checkout --quiet --detach da3f474c1230d161be1384ef97aec27f73b11636
+          test "$(git rev-parse HEAD)" = da3f474c1230d161be1384ef97aec27f73b11636
+          grep -qi 'MIT' LICENSE
+          python -m py_compile tools/cutdown.py tools/pacing.py tools/win_encoding.py
+          test ! -e .env
+      - name: Fetch individually-licensed public demo footage, NO PRIVATE CLIENT MEDIA
+        run: |
+          mkdir -p ds-proof
+          curl -fsSL --retry 3 --max-time 150 'https://assets.mixkit.co/videos/4610/4610-1080.mp4' -o ds-proof/illustrative-stock.mp4
+          test "$(wc -c < ds-proof/illustrative-stock.mp4)" -gt 500000
+      - name: Actually reframe real moving call-center video to 9:16 social master
+        run: |
+          python /tmp/digital-samba/tools/cutdown.py \
+            --input ds-proof/illustrative-stock.mp4 --output ds-proof/real-footage-9x16-vertical.mp4 \
+            --format 9:16 --mode crop --focus 0.58 --start 0.5 --end 4.0 \
+            --crf 19 --preset veryfast --json > ds-proof/cutdown-runtime.json
+          ffprobe -hide_banner -v error -show_format -show_streams -of json \
+            ds-proof/real-footage-9x16-vertical.mp4 > ds-proof/real-video-ffprobe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          r=json.loads(Path('ds-proof/real-video-ffprobe.json').read_text())
+          v=next(s for s in r['streams'] if s.get('codec_type')=='video')
+          assert v['width']==1080 and v['height']==1920 and v['codec_name']=='h264'
+          assert abs(float(r['format']['duration'])-3.5)<0.13
+          assert Path('ds-proof/real-footage-9x16-vertical.mp4').stat().st_size>150000
+          print('VERIFIED exact upstream cutdown tool produced real recorded-footage 1080x1920 video.')
+          PY
+      - name: Actually test upstream narration pacing detection and offline tempo correction
+        run: |
+          ffmpeg -v error -y -f lavfi -i 'sine=frequency=180:duration=4' \
+            -ar 48000 -ac 1 ds-proof/voice-pace-before.wav
+          python - <<'PY'
+          import importlib.util
+          import sys
+          from pathlib import Path
+          spec=importlib.util.spec_from_file_location('original_pacing','/tmp/digital-samba/tools/pacing.py')
+          p=importlib.util.module_from_spec(spec);spec.loader.exec_module(p)
+          words='People make human connections every single day our team helps businesses build lasting customer relationships together'
+          audio='ds-proof/voice-pace-before.wav'
+          before,label=p.pace_label(words,4)
+          assert before>170 and label=='fast', (before,label)
+          result=p.clamp_pace(audio,words,max_wpm=155,min_atempo=.75,verbose=False)
+          after,label=p.pace_label(words,p._probe_duration(audio))
+          assert result['applied'] and after<before and label in ('ok','fast')
+          import json
+          Path('ds-proof/pacing-offline-proof.json').write_text(json.dumps({
+           'upstream':'digitalsamba/claude-code-video-toolkit','original_wpm':before,'revised_wpm':after,
+           'atempo':result['atempo'],'functional_audio_correction':True,
+           'voice_quality_not_approved':True,'no_provider_inference':True},indent=2))
+          PY
+      - name: Export only our test derivative and technical evidence (not raw stock footage)
+        uses: actions/upload-artifact@v4
+        with:
+          name: digital-samba-real-9x16-editor-and-pacing-proof
+          path: |
+            ds-proof/real-footage-9x16-vertical.mp4
+            ds-proof/cutdown-runtime.json
+            ds-proof/real-video-ffprobe.json
+            ds-proof/pacing-offline-proof.json
+          retention-days: 7
+
+  additional-license-and-runtime-routing:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validate all 318 truthful status entries and paid-API blocks
+        working-directory: studio/318-activation
+        run: |
+          python -m unittest -v test_activate.py
+          python activate.py > "$GITHUB_WORKSPACE/batch-b-318-before-update.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: complete-318-pre-batch-b-truth-record
+          path: batch-b-318-before-update.json
+          retention-days: 14
