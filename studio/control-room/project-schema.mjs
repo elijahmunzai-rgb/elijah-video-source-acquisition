@@ -13,7 +13,7 @@ export function startProject({title='Untitled Film',duration=30,aspect='portrait
   const scenes=Array.from({length:n},(_,i)=>({
    id:'scene-'+String(i+1).padStart(3,'0'),duration:base+(i<extra?1:0),
    beat:i===0?'HOOK':i===n-1?'CLOSE':i<Math.ceil(n*.25)?'SETUP':i<Math.ceil(n*.72)?'STORY':'PAYOFF',
-   direction:'',media_ref:'',media_rights:'',camera:'',narration:'',caption:'',reviewed:false
+   direction:'',media_ref:'',source_in:0,media_rights:'',camera:'',narration:'',caption:'',reviewed:false
   }));
   return {schema:'elijah-film-project-v1',id:'draft-'+Date.now().toString(36),title:clean(title,80),
    duration:Number(duration),aspect,genre:clean(genre,40),privacy:'local-browser-only',
@@ -39,6 +39,7 @@ export function validateProject(project,{requireAssets=false}={}){
   else elapsed+=s.duration;
   if(!clean(s.id,80)||ids.has(s.id))errors.push('Duplicate/missing scene ID');
   ids.add(s.id);
+  if(s.source_in!==undefined&&(!Number.isFinite(s.source_in)||s.source_in<0))errors.push('Invalid source trim in scene '+(i+1));
   if(!clean(s.direction))warn.push('Scene '+(i+1)+' missing creative direction');
   if(!clean(s.media_ref,450)||!clean(s.media_rights,250)){missingAssets++;if(requireAssets)errors.push('Scene '+(i+1)+' requires actual approved source asset and licensing');}
   if(!s.reviewed)notApproved++;
