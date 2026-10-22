@@ -1,0 +1,151 @@
+name: Film Studio 318 activation / evidence batch A
+on:
+  push:
+    branches: [film-318-runtime-activation-20261022]
+    paths:
+      - 'studio/318-activation/**'
+      - '.github/workflows/film-318-operational-batch-a.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: film-318-activation-batch-a
+  cancel-in-progress: true
+jobs:
+  truth-registry:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Audit all 318 and enforce non-fabrication
+        working-directory: studio/318-activation
+        run: |
+          python -m unittest -v test_activate.py
+          python activate.py > $GITHUB_WORKSPACE/batch-a-registry.json
+          python activate.py --stage editing-compositing --limit 15 > $GITHUB_WORKSPACE/editing-review-queue.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: exact-318-activation-registry-report
+          path: |
+            batch-a-registry.json
+            editing-review-queue.json
+          retention-days: 14
+  geomotion-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Review pinned original MIT license and exact Git commit
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/hacimertgokhan/geomotion.git source
+          cd source
+          git checkout --detach 88c1c1c4f8946309f961ef6e7983171da7a95d07
+          test "$(git rev-parse HEAD)" = "88c1c1c4f8946309f961ef6e7983171da7a95d07"
+          grep -q 'MIT' LICENSE
+      - name: Offline geomotion original tests and real SVG/Lottie animation output
+        working-directory: source
+        run: |
+          node --test test/core.test.js
+          node src/node/cli.js render sunrise --formats svg,lottie --out ../upstream-output
+          test "$(find ../upstream-output -name '*.svg' -size +0c | wc -l)" -ge 1
+          test "$(find ../upstream-output -name '*.json' -size +0c | wc -l)" -ge 1
+          echo 'RESULT geomotion RUN_TESTED + OUTPUT_GENERATED; NO_FILM_QUALITY_CLAIM'
+      - uses: actions/upload-artifact@v4
+        with:
+          name: upstream-geomotion-fresh-runtime-proof
+          path: upstream-output/
+          retention-days: 14
+  lottie-core:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Pinned MIT source
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/diffusionstudio/lottie.git source
+          cd source
+          git checkout --detach 3c72912fad543897f90045ed4d355813837927fc
+          test "$(git rev-parse HEAD)" = "3c72912fad543897f90045ed4d355813837927fc"
+          grep -q 'MIT' LICENSE
+      - name: Original upstream Unicode/Lottie slot test
+        working-directory: source
+        run: |
+          node --experimental-strip-types --test scripts/text-slot-unicode.test.mjs
+          echo 'RESULT diffusionstudio/lottie UNIT_TESTED; full compositor NOT CERTIFIED'
+  reel-video-unit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Pinned MIT source only; no video provider calls
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/AsadMoulviDev/reel-video.git source
+          cd source
+          git checkout --detach 39a5ea97e81994bbaa0a546fc85fd7668f012890
+          test "$(git rev-parse HEAD)" = "39a5ea97e81994bbaa0a546fc85fd7668f012890"
+          grep -q 'MIT' LICENSE
+      - name: Install only dependencies, suppress lifecycle scripts
+        working-directory: source
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Original offline tests, NO cloud inference
+        working-directory: source
+        run: |
+          npm test
+          echo 'RESULT AsadMoulviDev/reel-video UNIT_TESTED; provider VIDEO GENERATION NOT VERIFIED'
+  screenwriting-instruction-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Clone audited MIT craft/creative skill pack
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/jtydhr88/screenwriting-skills.git source
+          cd source
+          git checkout --detach 51115f18d160aa8b2ac5813e4432b6f0b425358f
+          test "$(git rev-parse HEAD)" = "51115f18d160aa8b2ac5813e4432b6f0b425358f"
+          grep -qi 'MIT' LICENSE
+      - name: Validate original 26 instruction files, do not run untrusted prompts
+        run: |
+          test "$(find source/plugins/screenwriting/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)" -eq 26
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          p=Path('source/plugins/screenwriting/skills')
+          files=sorted(p.glob('*/SKILL.md'))
+          assert len(files)==26
+          for f in files:
+              data=f.read_text('utf-8')
+              assert data.startswith('---') and len(data)>300, f
+          Path('screenwriting-26-instructions-proof.json').write_text(
+              json.dumps({'upstream':'jtydhr88/screenwriting-skills',
+                 'skill_files_verified':len(files),'executed_as_code':False,
+                 'video_generated':False,'installed_in_chatgpt':False,
+                 'proof':'26 original non-executable instruction file structures'},indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: 26-screenwriting-source-structure-proof
+          path: screenwriting-26-instructions-proof.json
+          retention-days: 14
