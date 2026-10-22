@@ -32,7 +32,7 @@ async function readBody(req){
  return JSON.parse(body);
 }
 function authToken(req){const cookie=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(x=>x.startsWith(COOKIE+'='));return cookie?.slice((COOKIE+'=').length);}
-function validDemoRun(run){return run && Number.isSafeInteger(Number(run.id)) && run.event==='workflow_dispatch' && run.path?.endsWith('/'+WORKFLOW) && /^https:\/\/github\.com\/elijahmunzai-rgb\/elijah-video-source-acquisition\/actions\/runs\/[0-9]+$/.test(run.html_url||'');}
+function validDemoRun(run){return run && Number.isSafeInteger(Number(run.id)) && run.event==='workflow_dispatch' && String(run.path||'').split('@')[0].endsWith('/'+WORKFLOW) && /^https:\/\/github\.com\/elijahmunzai-rgb\/elijah-video-source-acquisition\/actions\/runs\/[0-9]+$/.test(run.html_url||'');}
 function cleanRun(run){
  return {id:Number(run.id),name:String(run.name||'').slice(0,150),status:String(run.status||'').slice(0,40),
  conclusion:run.conclusion==null?null:String(run.conclusion).slice(0,40),
