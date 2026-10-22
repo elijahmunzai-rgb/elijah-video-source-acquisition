@@ -1,7 +1,7 @@
 name: Free CPU Film Studio - Eight Agent Team
 on:
   push:
-    branches: [main]
+    branches: [main, studio-render-quality-v2-20261022]
     paths:
       - 'studio/agents/**'
       - 'studio/tests/test_film_agents.py'
@@ -19,7 +19,7 @@ on:
         default: Test free CPU film production
         type: string
       duration:
-        description: Plan duration; only 6s preview rendered
+        description: Planned storyboard duration; six-second original audio/HD motion demo rendered
         required: true
         default: '30'
         type: choice
@@ -61,22 +61,24 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg
           python -m pip install -r studio/requirements.txt
-      - name: Render real six-second H264 MP4 from Motion Agent
+      - name: Render original six-second 1080p H264/AAC editorial motion preview
         run: |
-          python studio/engine/render.py --validate agent-artifacts/motion-preview.json
-          python studio/engine/render.py agent-artifacts/motion-preview.json agent-artifacts/preview-6s.mp4
+          python studio/agents/premium_preview.py --brief agent-artifacts/brief.json --output agent-artifacts/preview-6s.mp4
           python - <<'PY'
           import json,subprocess,pathlib
           root=pathlib.Path("agent-artifacts")
           media=root/"preview-6s.mp4"
-          assert media.is_file() and media.stat().st_size>5000
+          assert media.is_file() and media.stat().st_size>750000, 'Quality gate: preview must not be tiny 360p static title'
           output=json.loads(subprocess.check_output(["ffprobe","-v","error","-show_format","-show_streams","-of","json",str(media)]))
           stream=next(s for s in output["streams"] if s["codec_type"]=="video")
           assert stream["codec_name"]=="h264"
+          assert (stream['width'],stream['height'])==(1920,1080), 'Landscape demo must be true Full HD'
           assert abs(float(output["format"]["duration"])-6)<.10
+          assert any(s['codec_type']=='audio' and s['codec_name']=='aac' for s in output['streams']), 'Original audio track required'
+          assert int(output['format']['bit_rate'])>=850000, 'Insufficient bitrate for quality preview'
           qa=json.loads((root/"qa.json").read_text())
           assert qa["preflight"] and not qa["public_publish_approved"]
-          print("PASS: eight role agents; six-second MP4; publication blocked")
+          print("PASS: 8 agent stages; actual Full-HD 1920x1080 six-second H264/AAC MP4; publication blocked")
           PY
       - name: Deliver public demo planning files and preview, no publishing
         if: always()
