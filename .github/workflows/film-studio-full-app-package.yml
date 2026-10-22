@@ -1,4 +1,4 @@
-name: Package Film Studio project workspace for Hostinger (tested no-billing ZIP)
+name: Film Studio application Node20 seven-file Hostinger release candidate
 on:
   push:
     branches: [film-studio-full-workflow-v1-20261022]
