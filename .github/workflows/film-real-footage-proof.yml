@@ -42,6 +42,12 @@ jobs:
         run: |
           python studio/cinematic_hook/render_hook.py cinematic-hook-artifact
           ffprobe -hide_banner -v error -show_entries format=duration,size,bit_rate -show_entries stream=codec_name,width,height,r_frame_rate -of json cinematic-hook-artifact/film-studio-real-footage-hook-6s.mp4
+      - name: Verify rights metadata, measured visual motion and nonfreezing video
+        run: |
+          python studio/cinematic_hook/quality_check.py \
+            cinematic-hook-artifact/film-studio-real-footage-hook-6s.mp4 \
+            cinematic-hook-artifact/SOURCE_AND_LICENSE_LEDGER.json \
+            cinematic-hook-artifact/MEASURED_VISUAL_QUALITY.json
       - name: Collect only redistributable derivative, attribution/rights metadata and quality frames
         if: always()
         uses: actions/upload-artifact@v4
@@ -51,6 +57,7 @@ jobs:
             cinematic-hook-artifact/film-studio-real-footage-hook-6s.mp4
             cinematic-hook-artifact/SOURCE_AND_LICENSE_LEDGER.json
             cinematic-hook-artifact/TECHNICAL_AND_CREATIVE_REVIEW.json
+            cinematic-hook-artifact/MEASURED_VISUAL_QUALITY.json
             cinematic-hook-artifact/frame-*.jpg
           if-no-files-found: warn
           retention-days: 7
