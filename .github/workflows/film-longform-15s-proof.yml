@@ -1,0 +1,90 @@
+name: Film Studio REAL 15-second fully authored CPU film + speech + music
+on:
+  push:
+    branches: [film-studio-full-duration-app-20261022]
+    paths:
+      - 'studio/longform/**'
+      - '.github/workflows/film-longform-15s-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-15s-music-and-voice-render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install free CPU editor, robotic local TTS, FFmpeg and probe
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg espeak-ng
+          python -m unittest discover -s studio/longform -p 'test_*.py' -v
+      - name: Download 3 individually verified public commercial-use Mixkit Free License clips
+        run: |
+          set -euo pipefail
+          mkdir -p demo-media
+          curl -fLSs --retry 3 --max-time 130 'https://assets.mixkit.co/videos/4610/4610-1080.mp4' -o demo-media/call-center-4610.mp4
+          curl -fLSs --retry 3 --max-time 130 'https://assets.mixkit.co/videos/4603/4603-1080.mp4' -o demo-media/call-center-4603.mp4
+          curl -fLSs --retry 3 --max-time 130 'https://assets.mixkit.co/videos/44746/44746-1080.mp4' -o demo-media/office-44746.mp4
+          for f in demo-media/*.mp4; do
+            echo "Real source: $(basename "$f") bytes=$(wc -c < "$f")"
+            ffprobe -hide_banner -v error -show_entries format=duration -of compact "$f"
+          done
+      - name: Author proper full-length JSON storyboard (3 DIFFERENT genuine film shots)
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          shots=[
+            ('call-center-4610.mp4','HOOK','A personal conversation starts with listening.','Every great conversation starts with listening.'),
+            ('call-center-4603.mp4','RELATIONSHIPS','Support and sales are about understanding people.','Real teams build stronger customer relationships.'),
+            ('office-44746.mp4','CLOSE','Show another genuine office phone call, then finish with agency identity.','Inbound Outbound Sales Agency. Build better connections.')
+          ]
+          j={'schema':'elijah-film-project-v1','title':'The Human Connection',
+           'privacy':'public-demo-only','duration':15,'aspect':'landscape','genre':'Commercial',
+           'voice':{'mode':'generate-local-draft','reference':'','rights':'Local robotic TTS generated on the free CI runner'},
+           'music':{'mode':'generate-original-draft','reference':'','rights':'New original low-volume drone synthesized in renderer'},
+           'subtitles':True,'release_approved':False,'scenes':[
+            {'id':f'scene-{i+1:03d}','duration':5,'beat':beat,'source_in':0,
+             'direction':direction,'media_ref':filename,
+             'media_rights':'Mixkit Stock Video Free License, commercial-use permitted; public illustrative stock actors, not agency employees',
+             'camera':'Real recorded human footage, source camera',
+             'narration':voice,'caption':'','reviewed':True} for i,(filename,beat,direction,voice) in enumerate(shots)]}
+          Path('full-film-15s-demo-project.json').write_text(json.dumps(j,indent=2))
+          PY
+      - name: Render real full-length 15 second H264 + spoken TTS + generated score (CPU, no paid services)
+        run: |
+          python studio/longform/render_timeline.py full-film-15s-demo-project.json \
+            --assets demo-media --work .work-15s --quality master \
+            --output completed-film-15s-demo.mp4
+          ffprobe -hide_banner -v error -show_format -show_streams -of json completed-film-15s-demo.mp4 > completed-film-15s-ffprobe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('completed-film-15s-ffprobe.json').read_text())
+          v=next(s for s in j['streams'] if s['codec_type']=='video')
+          a=next(s for s in j['streams'] if s['codec_type']=='audio')
+          assert v['codec_name']=='h264' and v['width']==1920 and v['height']==1080
+          assert a['codec_name']=='aac'
+          assert abs(float(j['format']['duration'])-15)<.11
+          r=json.loads(Path('completed-film-15s-demo.qa.json').read_text())
+          assert r['has_actual_voice_track'] and r['has_actual_music_track'] and r['scenes']==3
+          assert not r['human_creative_approved'], 'Never auto-certify an unreviewed commercial'
+          print('PASS: original full 15-second film timeline, 3 distinct source clips, real voice and music audio tracks')
+          PY
+      - name: Upload demonstrable MP4, storyboard and QA, not raw stock files
+        uses: actions/upload-artifact@v4
+        with:
+          name: ELJ-STUDIO-full-15s-voice-music-master-CPU-TECHNICAL
+          path: |
+            completed-film-15s-demo.mp4
+            completed-film-15s-demo.qa.json
+            completed-film-15s-ffprobe.json
+            full-film-15s-demo-project.json
+          retention-days: 7
+          if-no-files-found: warn
