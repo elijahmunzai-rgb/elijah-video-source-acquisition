@@ -1,5 +1,6 @@
 import {randomBytes, createHash, timingSafeEqual} from 'node:crypto';
 import {readDemoMp4} from './media.mjs';
+import {createProjectStore} from './project-store.mjs';
 
 const REPO='elijahmunzai-rgb/elijah-video-source-acquisition';
 const API='https://api.github.com/repos/'+REPO;
@@ -25,10 +26,10 @@ function validOrigin(req){
  }catch{return false;}
 }
 function action(req){return validOrigin(req)&&req.headers['x-studio-action']==='1';}
-async function readBody(req){
+async function readBody(req,limit=4096){
  if(!String(req.headers['content-type']||'').startsWith('application/json'))throw Error('JSON body required');
  let total=0,body='';
- for await(const chunk of req){total+=chunk.length;if(total>4096)throw Error('Request too large');body+=chunk.toString('utf8');}
+ for await(const chunk of req){total+=chunk.length;if(total>limit)throw Error('Request too large');body+=chunk.toString('utf8');}
  return JSON.parse(body);
 }
 function authToken(req){const cookie=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(x=>x.startsWith(COOKIE+'='));return cookie?.slice((COOKIE+'=').length);}
@@ -44,6 +45,7 @@ function cleanJob(job){return {name:String(job.name||'').slice(0,120),status:Str
 function cleanArtifact(a,runId){return {id:Number(a.id),name:String(a.name||'').slice(0,150),size_in_bytes:Number(a.size_in_bytes)||0,expired:!!a.expired,expires_at:String(a.expires_at||'').slice(0,40),download_page:'https://github.com/'+REPO+'/actions/runs/'+runId+'#artifacts'};}
 export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()}={}){
  const sessions=new Map(),failed=new Map(),launches=[];
+ const projectStore=createProjectStore(env.STUDIO_PROJECT_DIR||'');
  const admin=String(env.STUDIO_ADMIN_PASSWORD||'');
  const ghToken=String(env.GITHUB_STUDIO_TOKEN||'');
  const passwordSet=admin.length>=16;
@@ -75,7 +77,7 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
  return async function handle(req,res){
   const pathname=reqUrl(req).pathname,method=req.method;
   if(pathname==='/api/session' && method==='GET'){
-   send(res,200,{authenticated:auth(req),login_enabled:passwordSet,dispatch_enabled:canDispatch,preview_enabled:canDispatch,public_demo_only:true,actions_url:ACTIONS});return true;
+   send(res,200,{authenticated:auth(req),login_enabled:passwordSet,dispatch_enabled:canDispatch,preview_enabled:canDispatch,projects_enabled:projectStore.enabled,public_demo_only:true,actions_url:ACTIONS});return true;
   }
   if(pathname==='/api/session' && method==='POST'){
    if(!action(req)){send(res,403,{error:'Origin and action header required'});return true;}
@@ -99,6 +101,33 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
    if(!action(req)){send(res,403,{error:'Origin and action header required'});return true;}
    const token=authToken(req);if(token)sessions.delete(hash(token));
    send(res,200,{authenticated:false},{'Set-Cookie':COOKIE+'=; Path=/; Secure; HttpOnly; SameSite=Strict; Max-Age=0'});return true;
+  }
+  if(pathname==='/api/projects' && method==='GET'){
+   if(!auth(req)){send(res,401,{error:'Secure Studio sign-in required'});return true;}
+   if(!projectStore.enabled){send(res,503,{error:'Private Studio project storage not configured'});return true;}
+   try{send(res,200,{projects:await projectStore.list(),private_storage:true});}
+   catch{send(res,503,{error:'Private Studio project listing unavailable'});}
+   return true;
+  }
+  if(pathname==='/api/projects' && method==='POST'){
+   if(!action(req)){send(res,403,{error:'Same-origin action required'});return true;}
+   if(!auth(req)){send(res,401,{error:'Secure Studio sign-in required'});return true;}
+   if(!projectStore.enabled){send(res,503,{error:'Private Studio project storage not configured'});return true;}
+   let data;try{data=await readBody(req,180000);}catch{send(res,400,{error:'Invalid JSON project or size limit'});return true;}
+   try{
+    const result=await projectStore.save(data);
+    send(res,201,{id:result.id,saved:true,updated_at:result.project.updated_at,release_approved:false});
+   }catch(e){send(res,400,{error:String(e.message||'Invalid project').slice(0,180)});}
+   return true;
+  }
+  const savedProject=/^\\/api\\/projects\\/([0-9a-f-]{36})$/.exec(pathname);
+  if(savedProject){
+   if(method!=='GET'){send(res,405,{error:'Method not allowed'});return true;}
+   if(!auth(req)){send(res,401,{error:'Secure Studio sign-in required'});return true;}
+   if(!projectStore.enabled){send(res,503,{error:'Private Studio project storage not configured'});return true;}
+   try{send(res,200,{project:await projectStore.get(savedProject[1]),private_storage:true});}
+   catch{send(res,404,{error:'Studio project not found'});}
+   return true;
   }
   if(pathname==='/api/jobs' && method==='GET'){
    try{
