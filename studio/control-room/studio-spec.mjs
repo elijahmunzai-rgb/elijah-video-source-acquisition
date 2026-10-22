@@ -61,6 +61,7 @@ export function validateProject(input,{render=false}={}){
   if(!cleaned.public_demo)errors.push('Rendering requires explicit non-confidential public-demo consent');
   if(duration_seconds>MAX_CPU_JOB_SECONDS)errors.push('CPU job length limit 600 seconds; export plan and split longer projects');
   if(voice==='off'&&music==='off')errors.push('At least one actual audio track required');
+  if(voice==='espeak-en'&&!scenes.some(s=>s.narration))errors.push('Voiceover enabled but no narration text is in any shot');
   if(voice==='recorded-voice'||music==='licensed-track')errors.push('Private media uploads are not supported in public demo worker');
   let visualSeconds=0;const parts=new Set(),uniq=new Set();
   for(const s of scenes){
