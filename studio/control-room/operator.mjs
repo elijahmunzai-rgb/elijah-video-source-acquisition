@@ -131,6 +131,16 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
     send(res,202,{accepted:true,run_id:null,notice:'GitHub accepted demo request; discover run in recent jobs shortly',actions_url:ACTIONS});return true;
    }catch{send(res,502,{error:'GitHub dispatch temporarily unavailable'});return true;}
   }
+  if(pathname==='/api/studio/jobs' && method==='GET'){
+    try{
+      const d=await ghGet('/actions/workflows/'+FULL_WORKFLOW+'/runs?per_page=30');
+      const runs=(d.workflow_runs||[]).filter(x=>x.head_branch===BRANCH &&
+        String(x.path||'').split('@')[0].endsWith('/'+FULL_WORKFLOW) &&
+        /^https:\/\/github\.com\/elijahmunzai-rgb\/elijah-video-source-acquisition\/actions\/runs\/[0-9]+$/.test(x.html_url||''))
+        .slice(0,20).map(cleanRun);
+      send(res,200,{jobs:runs,workflow:FULL_WORKFLOW,public_demo_only:true});return true;
+    }catch{send(res,503,{error:'GitHub full-production status temporarily unavailable'});return true;}
+  }
   if(pathname==='/api/studio/render' && method==='POST'){
     if(!action(req)){send(res,403,{error:'Same-origin action required'});return true;}
     if(!auth(req)){send(res,401,{error:'Admin login required'});return true;}
@@ -145,17 +155,23 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
     const spec_json=JSON.stringify(result.project);
     if(Buffer.byteLength(spec_json)>60000){send(res,413,{error:'Timeline too large for GitHub Actions input; split into projects'});return true;}
     launches.push(now());
+    // A repo-scoped Contents:Write token creates one reviewed PUBLIC request.
+    // A branch-scoped GitHub push workflow runs the actual renderer without
+    // requiring the new workflow to be present on main/default branch.
+    const requestPath='studio/full-workflow/requests/film-'+now()+'-'+randomBytes(5).toString('hex')+'.json';
     try{
       const ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),8000);let response;
       try{
-        response=await fetcher(API+'/actions/workflows/'+FULL_WORKFLOW+'/dispatches',{
-          method:'POST',headers:{...ghHeaders(true),'Content-Type':'application/json'},
-          body:JSON.stringify({ref:BRANCH,inputs:{spec_json}}),signal:ctrl.signal});
+        response=await fetcher(API+'/contents/'+requestPath,{
+          method:'PUT',headers:{...ghHeaders(true),'Content-Type':'application/json'},
+          body:JSON.stringify({message:'Queue approved nonconfidential film project',
+            branch:BRANCH,content:Buffer.from(spec_json,'utf8').toString('base64')}),
+          signal:ctrl.signal});
       }finally{clearTimeout(timer);}
-      if(response.status!==204){send(res,502,{error:'Full-film workflow dispatch rejected. Workflow must be deployed to approved branch before use.'});return true;}
+      if(response.status!==201){send(res,502,{error:'GitHub project request rejected. Check repository-only Contents Write permission and workflow branch.'});return true;}
       send(res,202,{accepted:true,run_id:null,workflow:FULL_WORKFLOW,
-        notice:'GitHub accepted real-duration source-based film project. Observe workflow job and artifact for actual completion.'});return true;
-    }catch{send(res,502,{error:'GitHub dispatch unavailable'});return true;}
+        request_file:requestPath,notice:'GitHub accepted approved public project request; render workflow will launch on branch push.'});return true;
+    }catch{send(res,502,{error:'GitHub request dispatch temporarily unavailable'});return true;}
   }
   const match=/^\/api\/jobs\/([1-9][0-9]{0,18})(?:\/(preview|download))?$/.exec(pathname);
   if(match){
