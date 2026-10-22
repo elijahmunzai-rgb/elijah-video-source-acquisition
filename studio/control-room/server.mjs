@@ -1,6 +1,5 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
-import {fileURLToPath} from 'node:url';
 
 const REPO = 'elijahmunzai-rgb/elijah-video-source-acquisition';
 const ACTIONS_URL = 'https://github.com/' + REPO + '/actions';
@@ -93,7 +92,9 @@ export function createServer({fetcher = fetch, cacheMs = 60_000} = {}) {
     json(res,404,{error:'Not found'});
   });
 }
-if (process.argv[1] && fileURLToPath(import.meta.url) === fileURLToPath(new URL('file://' + process.argv[1]))) {
+// Hostinger imports the configured entry module rather than invoking it as the CLI main.
+// Start eagerly in hosting; skip auto-listen inside Node's native test runner.
+if (!process.env.NODE_TEST_CONTEXT) {
   const port = Number(process.env.PORT || 3000);
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid PORT');
   createServer().listen(port,'0.0.0.0',()=>console.log('Elijah Film Studio read-only dashboard listening on '+port));
