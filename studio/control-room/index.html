@@ -204,6 +204,12 @@ async function opInspect(id){
    const btn=document.createElement('button');btn.type='button';btn.textContent='Play secure six-second preview';
    btn.addEventListener('click',()=>{video.src='/api/jobs/'+id+'/preview';video.classList.remove('operHide');video.load();});
    arts.append(btn);
+   const download=document.createElement('a');
+   download.href='/api/jobs/'+id+'/download';
+   download.download='public-demo-preview-6s.mp4';
+   download.textContent='Download preview MP4 ↓';
+   download.style.marginLeft='12px';
+   arts.append(download);
   } else {
    const note=document.createElement('p');note.textContent='Inline MP4 playback requires server-side GitHub token and admin sign-in. Use GitHub artifact link for download.';arts.append(note);
   }
