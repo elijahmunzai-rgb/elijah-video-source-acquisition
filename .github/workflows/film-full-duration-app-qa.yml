@@ -1,0 +1,36 @@
+name: Film Studio 15s to 10m Workspace QA
+on:
+  push:
+    branches: [film-studio-full-duration-app-20261022]
+    paths:
+      - 'studio/control-room/**'
+      - 'studio/longform/**'
+      - '.github/workflows/film-full-duration-app-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  secure-web-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Test full-duration editor schemas and existing authentication safety
+        working-directory: studio/control-room
+        run: npm test
+      - name: Parse browser JS and test complete server entrypoint
+        run: |
+          node --check studio/control-room/studio-app.mjs
+          node --check studio/control-room/project-schema.mjs
+          node --check studio/control-room/server.mjs
+          node --check studio/control-room/operator.mjs
+      - name: Static security checks
+        run: |
+          grep -q '2 minutes' studio/control-room/studio-app.html
+          grep -q '5 minutes' studio/control-room/studio-app.html
+          grep -q '10 minutes' studio/control-room/studio-app.html
+          grep -q 'release_approved:false' studio/control-room/project-schema.mjs
+          ! grep -n 'sk-' studio/control-room/studio-app.mjs
