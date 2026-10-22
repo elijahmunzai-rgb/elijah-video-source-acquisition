@@ -1,7 +1,9 @@
-name: Film Studio full-workflow beta (real durations, voice and music)
+name: Film Studio full-length public production (real duration, voice, music)
 on:
   push:
-    branches: [film-studio-full-workflow-v1-20261022, studio-operator-phase2-20261022]
+    branches:
+      - film-studio-full-workflow-v1-20261022
+      - studio-operator-phase2-20261022
     paths:
       - 'studio/control-room/**'
       - 'studio/full-workflow/**'
@@ -9,17 +11,17 @@ on:
   workflow_dispatch:
     inputs:
       spec_json:
-        description: "Public nonconfidential verified project JSON. Empty runs approved 15s sample. NO client/private media."
+        description: Public nonconfidential project JSON (empty runs approved 15s sample)
         required: false
         type: string
 permissions:
   contents: read
 concurrency:
-  group: film-studio-full-beta-${{ github.ref }}
+  group: studio-full-film-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  app-contract-and-render:
-    if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition' && (github.event_name != 'push' || github.actor == 'elijahmunzai-rgb')
+  render-and-validate:
+    if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
@@ -33,7 +35,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Verify app scene/timeline/audio validation and authenticated render submission
+      - name: Validate full web application contracts and client JavaScript
         working-directory: studio/control-room
         run: |
           npm test
@@ -44,67 +46,35 @@ jobs:
           const fs=require('fs'),vm=require('vm');
           const html=fs.readFileSync('studio.html','utf8');
           const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)];
-          if(scripts.length!==1)throw Error('Expected exactly one local-only studio UI script');
-          new vm.Script(scripts[0][1],{filename:'studio.html embedded JS'});
-          console.log('PASS app embedded JS syntax');
+          if(scripts.length!==1)throw Error('Expected one self-contained studio UI script');
+          new vm.Script(scripts[0][1],{filename:'studio UI'});
           JS
-      - name: Prepare FFmpeg/eSpeak CPU worker (no paid services or GPU)
+      - name: Prepare verified free CPU media utilities
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
           ffmpeg -hide_banner -filters | grep -E 'drawtext|loudnorm'
-      - name: Verify public demo project and source-footage shot plan
+      - name: Resolve one owner-approved public project or 15s standalone test
         env:
           PUBLIC_SPEC_JSON: ${{ inputs.spec_json }}
         run: |
+          set -euo pipefail
           mkdir -p film-work
           if [ -n "$PUBLIC_SPEC_JSON" ]; then
             printf '%s' "$PUBLIC_SPEC_JSON" > film-work/project.json
-          elif [ "$GITHUB_REF_NAME" = "studio-operator-phase2-20261022" ]; then
-            # Only one freshly CREATED public JSON request, never arbitrary user filename.
-            request="$(git diff HEAD^ HEAD --diff-filter=A --name-only -- 'studio/full-workflow/requests/' | head -2)"
-            test "$(printf '%s\n' "$request" | sed '/^$/d' | wc -l)" -eq 1
-            echo "$request" | grep -Eq '^studio/full-workflow/requests/film-[0-9]+-[a-f0-9]{10}\.json
-          python studio/full-workflow/render.py --project film-work/project.json --output film-work --validate-only
-      - name: Render actual film length, recorded-person footage, voice and score
-        run: |
-          python studio/full-workflow/render.py --project film-work/project.json --output film-work/output
-          ffprobe -v error -show_format -show_streams -of json film-work/output/film-studio-public-demo.mp4 > film-work/output/FFPROBE.json
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          p=Path('film-work/output')
-          a=json.loads((p/'RENDER_QA.json').read_text())
-          s=json.loads((p/'SHOT_PLAN.json').read_text())
-          v=json.loads((p/'FFPROBE.json').read_text())
-          assert a['technical_pass'] and not a['public_publish_approved']
-          assert abs(a['duration_seconds']-s['duration_seconds'])<.18
-          assert a['source_segments']==len(s['scenes'])
-          assert any(x['codec_type']=='audio' for x in v['streams'])
-          assert (p/'film-studio-public-demo.mp4').stat().st_size>500000
-          print('PASS actual encoded requested duration; narration and score; public source provenance. Not creative approved.')
-          PY
-      - name: Upload MP4, project timeline and source rights/QA proof
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: elijah-film-studio-full-duration-public-demo-review
-          path: |
-            film-work/output/film-studio-public-demo.mp4
-            film-work/output/RENDER_QA.json
-            film-work/output/SHOT_PLAN.json
-            film-work/output/SOURCE_RIGHTS.json
-            film-work/output/FFPROBE.json
-          if-no-files-found: warn
-          retention-days: 7
-
-            test "$(wc -c < "$request")" -le 60000
-            cp "$request" film-work/project.json
           else
-            cp studio/full-workflow/examples/public-15-second-people-first.json film-work/project.json
+            added="$(git diff HEAD^ HEAD --diff-filter=A --name-only -- studio/full-workflow/requests/)"
+            if [ -n "$added" ]; then
+              test "$(printf '%s\n' "$added" | wc -l)" -eq 1
+              echo "$added" | grep -Eq '^studio/full-workflow/requests/film-[0-9]+-[a-f0-9]{10}\.json$'
+              test "$(wc -c < "$added")" -le 60000
+              cp "$added" film-work/project.json
+            else
+              cp studio/full-workflow/examples/public-15-second-people-first.json film-work/project.json
+            fi
           fi
           python studio/full-workflow/render.py --project film-work/project.json --output film-work --validate-only
-      - name: Render actual film length, recorded-person footage, voice and score
+      - name: Actually render encoded film, source footage, soundtrack and narration
         run: |
           python studio/full-workflow/render.py --project film-work/project.json --output film-work/output
           ffprobe -v error -show_format -show_streams -of json film-work/output/film-studio-public-demo.mp4 > film-work/output/FFPROBE.json
@@ -112,17 +82,17 @@ jobs:
           import json
           from pathlib import Path
           p=Path('film-work/output')
-          a=json.loads((p/'RENDER_QA.json').read_text())
-          s=json.loads((p/'SHOT_PLAN.json').read_text())
-          v=json.loads((p/'FFPROBE.json').read_text())
-          assert a['technical_pass'] and not a['public_publish_approved']
-          assert abs(a['duration_seconds']-s['duration_seconds'])<.18
-          assert a['source_segments']==len(s['scenes'])
-          assert any(x['codec_type']=='audio' for x in v['streams'])
+          qa=json.loads((p/'RENDER_QA.json').read_text())
+          spec=json.loads((p/'SHOT_PLAN.json').read_text())
+          tech=json.loads((p/'FFPROBE.json').read_text())
+          assert qa['technical_pass'] and not qa['public_publish_approved']
+          assert abs(qa['duration_seconds']-spec['duration_seconds'])<.18
+          assert qa['source_segments']==len(spec['scenes'])
+          assert any(s['codec_type']=='audio' for s in tech['streams'])
           assert (p/'film-studio-public-demo.mp4').stat().st_size>500000
-          print('PASS actual encoded requested duration; narration and score; public source provenance. Not creative approved.')
+          print('PASS actual encoded requested duration with non-repeated approved stock segments and original audio. Creative review remains blocked.')
           PY
-      - name: Upload MP4, project timeline and source rights/QA proof
+      - name: Upload final film and human-review evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
