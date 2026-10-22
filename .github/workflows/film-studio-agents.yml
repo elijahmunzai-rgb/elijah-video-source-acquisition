@@ -1,9 +1,8 @@
 name: Free CPU Film Studio - Eight Agent Team
 on:
   push:
-    branches: [main, studio-operator-phase2-20261022]
+    branches: [main]
     paths:
-      - 'studio/demo-requests/**'
       - 'studio/agents/**'
       - 'studio/tests/test_film_agents.py'
       - '.github/workflows/film-studio-agents.yml'
