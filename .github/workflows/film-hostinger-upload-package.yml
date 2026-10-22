@@ -1,7 +1,7 @@
 name: Package Hostinger Film Studio Staging Web App (no secrets)
 on:
   push:
-    branches: [studio-control-room-staging-20261022]
+    branches: [studio-control-room-staging-20261022, studio-operator-phase2-20261022]
     paths:
       - 'studio/control-room/**'
       - '.github/workflows/film-hostinger-upload-package.yml'
@@ -24,12 +24,12 @@ jobs:
         run: |
           mkdir -p release
           cd studio/control-room
-          test -f package.json && test -f server.mjs && test -f index.html
-          node --check server.mjs
+          test -f package.json && test -f server.mjs && test -f index.html && test -f operator.mjs && test -f media.mjs
+          node --check server.mjs && node --check operator.mjs && node --check media.mjs
           node -e "let p=require('./package.json');if(p.scripts.start!=='node server.mjs')process.exit(1)"
-          zip -q -j ../../release/Elijah-Film-Studio-Hostinger-Staging.zip package.json server.mjs index.html
+          zip -q -j ../../release/Elijah-Film-Studio-Hostinger-Staging.zip package.json server.mjs index.html operator.mjs media.mjs
           cd ../..
-          test "$(unzip -Z1 release/Elijah-Film-Studio-Hostinger-Staging.zip | wc -l)" -eq 3
+          test "$(unzip -Z1 release/Elijah-Film-Studio-Hostinger-Staging.zip | wc -l)" -eq 5
           unzip -Z1 release/Elijah-Film-Studio-Hostinger-Staging.zip
           sha256sum release/*.zip > release/SHA256SUMS.txt
           echo "No paid service, no runtime secrets, and no customer footage in this artifact."
