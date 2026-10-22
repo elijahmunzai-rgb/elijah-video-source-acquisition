@@ -179,7 +179,7 @@ def render(project,assets,out,work,quality='preview'):
          '-i',str(picture),'-i',str(voice),'-i',str(music),
          '-filter_complex','[1:a]volume=0.96[vo];[2:a]volume=0.36[mu];'
              '[vo][mu]amix=inputs=2:duration=first:normalize=0,'
-             'alimiter=limit=0.90:level=disabled[a]',
+             'alimiter=limit=0.90:level=0[a]',
          '-map','0:v:0','-map','[a]','-t',str(project['duration']),
          '-c:v','copy','-c:a','aac','-b:a','160k','-movflags','+faststart',str(out)])
     master=media(out)
