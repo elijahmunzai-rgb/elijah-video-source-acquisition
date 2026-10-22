@@ -35,7 +35,10 @@ class FilmAgentTests(unittest.TestCase):
     def test_preview_is_only_six_seconds(self):
         s=a.motion(self.b)
         self.assertEqual(sum(x["duration"] for x in s["scenes"]),6)
-        self.assertEqual(s["canvas"],{"width":640,"height":360,"fps":24})
+        self.assertEqual(s["canvas"],{"width":1920,"height":1080,"fps":24})
+        self.assertEqual(s["renderer"],"studio/agents/premium_preview.py")
+        self.assertIn("NOT photoreal",s["preview_type"])
+        self.assertTrue(s["audio"]["copyright_cleared"])
     def test_agent_handoffs_and_sha256(self):
         with tempfile.TemporaryDirectory() as t:
             out=a.build(self.b,t)
