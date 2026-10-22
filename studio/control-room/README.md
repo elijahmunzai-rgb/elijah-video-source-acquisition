@@ -61,3 +61,24 @@ Do not configure real GitHub credentials in tests. Test suite injects fake crede
 ## Later production requirements
 
 To accept private footage, actual creative client briefs, invoicing or publishing: deploy private isolated runners/stores, durable auth and per-job quotas, stronger token rotation, server-side persistence, consent/release review, human approval gates, and background orchestration. **This release is not a finished commercial SaaS, unrestricted AI film director or full feature-film renderer.**
+
+## Token-free public demo requests through GitHub (verified)
+
+For approved public demo content, there is an additional server-independent workflow so a GitHub-authenticated project maintainer or connected GitHub agent can initiate renders **without placing a GitHub token on Hostinger**:
+
+1. On branch `studio-operator-phase2-20261022`, create exactly one new JSON file per commit under `studio/demo-requests/`, for example `2026-10-22-my-demo.json`:
+   ```json
+   {
+     "title": "STUDIO ONLINE",
+     "goal": "Demonstrate original CPU film planning and a six-second H264 preview.",
+     "duration": "30",
+     "aspect": "landscape",
+     "public_demo": true
+   }
+   ```
+2. The owner-gated workflow `.github/workflows/film-demo-request-dispatch.yml` validates the newly added public JSON file, enforces the only-approved-actor restriction and uses GitHub Actions' **ephemeral repository-scoped GITHUB_TOKEN** (Actions write; Contents read) to dispatch the fixed `film-studio-agents.yml` workflow on the beta branch. No permanent token is distributed and no credential is used in Hostinger.
+3. The render produces eight deterministic handoffs, storyboards, rights/QA checks, and a **real six-second MP4**, with artifacts retained under GitHub Actions retention policy. The dispatched `workflow_dispatch` run appears on the existing Hostinger dashboard's **Production Jobs** list, even though the dashboard's one-click launch form remains locked.
+
+**Verified**: request file `studio/demo-requests/2026-10-22-studio-online.json` triggered dispatcher [run 39719286027](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39719286027) (success), which triggered public-demo render [run 39719295804](https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39719295804) (success). The live Hostinger `/api/jobs` returned render run ID 39719295804 as completed/success; `/api/jobs/39719295804` returned actual successful step and downloadable artifact metadata, artifact ID 12399848890. MP4 independently probed as **H.264, 640×360, 6.000 seconds**.
+
+**Security boundaries**: only a GitHub write-authorized owner can create the triggering Git commit; anyone can view public request JSON, logs, and demo artifacts, so never include private client content. The owner/branch/file validation is defense in depth, not a replacement for per-user identity or rate limits in a real paid SaaS. GitHub Actions remains subject to the platform's policies and compute quotas. No auto-publishing. For true one-click web launch, the Hostinger `STUDIO_ADMIN_PASSWORD` and `GITHUB_STUDIO_TOKEN` still need to be configured by the user in Hostinger's site-specific secrets UI.
