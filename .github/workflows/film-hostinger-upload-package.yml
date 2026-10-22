@@ -24,12 +24,12 @@ jobs:
         run: |
           mkdir -p release
           cd studio/control-room
-          test -f package.json && test -f server.mjs && test -f index.html && test -f operator.mjs && test -f media.mjs && test -f studio-app.html && test -f studio-app.mjs && test -f project-schema.mjs
-          node --check server.mjs && node --check operator.mjs && node --check media.mjs && node --check studio-app.mjs && node --check project-schema.mjs
+          test -f package.json && test -f server.mjs && test -f index.html && test -f operator.mjs && test -f media.mjs && test -f studio-app.html && test -f studio-app.mjs && test -f project-schema.mjs && test -f project-store.mjs
+          node --check server.mjs && node --check operator.mjs && node --check media.mjs && node --check studio-app.mjs && node --check project-schema.mjs && node --check project-store.mjs
           node -e "let p=require('./package.json');if(p.scripts.start!=='node server.mjs')process.exit(1)"
-          zip -q -j ../../release/Elijah-Film-Studio-Full-Duration-Staging.zip package.json server.mjs index.html operator.mjs media.mjs studio-app.html studio-app.mjs project-schema.mjs
+          zip -q -j ../../release/Elijah-Film-Studio-Full-Duration-Staging.zip package.json server.mjs index.html operator.mjs media.mjs studio-app.html studio-app.mjs project-schema.mjs project-store.mjs
           cd ../..
-          test "$(unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip | wc -l)" -eq 8
+          test "$(unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip | wc -l)" -eq 9
           unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip
           (cd release && sha256sum *.zip > SHA256SUMS.txt)
           echo "No paid service, no runtime secrets, and no customer footage in this artifact."
