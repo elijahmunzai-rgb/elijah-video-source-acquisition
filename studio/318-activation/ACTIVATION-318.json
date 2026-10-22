@@ -5967,18 +5967,21 @@
       "security_index": "safe",
       "source_verified_historical": true,
       "component_family_hypothesis": "code/toolkit (review before sandbox)",
-      "runnable_confirmed": false,
+      "runnable_confirmed": true,
       "installed": false,
       "integration_verified": false,
       "cinematic_quality_verified": false,
       "paid_calls_allowed": false,
       "private_media_allowed": false,
-      "execution_status": "previous upstream unit-level smoke verified; fresh CI queued",
+      "execution_status": "fresh pinned original upstream unit tests PASSED; no full cinematic pipeline integration",
       "pin_sha": "39a5ea97e81994bbaa0a546fc85fd7668f012890",
       "notes": [
         "Await isolated source+license inspection"
       ],
-      "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows"
+      "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows",
+      "sandbox_unit_test_passed": true,
+      "sandbox_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39740772442",
+      "proof_scope": "selected unit tests only; not a finished video-production integration"
     },
     {
       "id": "272",
@@ -6033,18 +6036,21 @@
       "security_index": "safe",
       "source_verified_historical": true,
       "component_family_hypothesis": "model/GPU candidate (deferred)",
-      "runnable_confirmed": false,
+      "runnable_confirmed": true,
       "installed": false,
       "integration_verified": false,
       "cinematic_quality_verified": false,
       "paid_calls_allowed": false,
       "private_media_allowed": false,
-      "execution_status": "previous upstream unit-level smoke verified; fresh CI queued",
+      "execution_status": "fresh pinned original upstream unit tests PASSED; no full cinematic pipeline integration",
       "pin_sha": "3c72912fad543897f90045ed4d355813837927fc",
       "notes": [
         "Await isolated source+license inspection"
       ],
-      "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows"
+      "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows",
+      "sandbox_unit_test_passed": true,
+      "sandbox_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39740772442",
+      "proof_scope": "selected unit tests only; not a finished video-production integration"
     },
     {
       "id": "275",
@@ -6429,18 +6435,21 @@
       "security_index": "safe",
       "source_verified_historical": true,
       "component_family_hypothesis": "instruction/reference (not a process)",
-      "runnable_confirmed": false,
+      "runnable_confirmed": true,
       "installed": false,
       "integration_verified": false,
       "cinematic_quality_verified": false,
       "paid_calls_allowed": false,
       "private_media_allowed": false,
-      "execution_status": "previous upstream unit-level smoke verified; fresh CI queued",
+      "execution_status": "fresh pinned isolated tests PASSED; genuine SVG + Lottie output",
       "pin_sha": "88c1c1c4f8946309f961ef6e7983171da7a95d07",
       "notes": [
         "Await isolated source+license inspection"
       ],
-      "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows"
+      "last_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/tree/main/.github/workflows",
+      "sandbox_unit_test_passed": true,
+      "sandbox_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39740772442",
+      "proof_scope": "selected unit tests only; not a finished video-production integration"
     },
     {
       "id": "293",
@@ -6545,12 +6554,14 @@
       "cinematic_quality_verified": false,
       "paid_calls_allowed": false,
       "private_media_allowed": false,
-      "execution_status": "not attempted in this activation",
+      "execution_status": "26 original instruction files structurally validated on free runner; documents, not a running app",
       "pin_sha": null,
       "notes": [
         "Await isolated source+license inspection"
       ],
-      "last_proof_url": null
+      "last_proof_url": null,
+      "instruction_pack_verified": true,
+      "sandbox_proof_url": "https://github.com/elijahmunzai-rgb/elijah-video-source-acquisition/actions/runs/39740772442"
     },
     {
       "id": "298",
@@ -7015,5 +7026,9 @@
       ],
       "last_proof_url": null
     }
-  ]
+  ],
+  "last_verified_batch": "A",
+  "last_verified_run": 39740772442,
+  "fresh_selected_upstream_unit_tests": 3,
+  "fresh_instruction_pack_verified": 1
 }
