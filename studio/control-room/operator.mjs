@@ -120,7 +120,7 @@ export function createOperator({fetcher=fetch,env=process.env,now=()=>Date.now()
    }catch(e){send(res,400,{error:String(e.message||'Invalid project').slice(0,180)});}
    return true;
   }
-  const savedProject=/^\\/api\\/projects\\/([0-9a-f-]{36})$/.exec(pathname);
+  const savedProject=new RegExp('^/api/projects/([0-9a-f-]{36})$').exec(pathname);
   if(savedProject){
    if(method!=='GET'){send(res,405,{error:'Method not allowed'});return true;}
    if(!auth(req)){send(res,401,{error:'Secure Studio sign-in required'});return true;}
