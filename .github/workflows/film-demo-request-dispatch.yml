@@ -1,0 +1,62 @@
+name: Film Studio public demo request dispatcher
+on:
+  push:
+    branches: [studio-operator-phase2-20261022]
+    paths:
+      - 'studio/demo-requests/*.json'
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: public-demo-requests
+  cancel-in-progress: false
+jobs:
+  dispatch:
+    if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition' && github.actor == 'elijahmunzai-rgb'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Validate single new public request and dispatch existing CPU workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, re, subprocess
+          from pathlib import PurePosixPath
+          assert os.getenv('GITHUB_ACTOR') == 'elijahmunzai-rgb'
+          assert os.getenv('GITHUB_REF_NAME') == 'studio-operator-phase2-20261022'
+          changed = subprocess.check_output(
+              ['git', 'diff', '--diff-filter=A', '--name-only', 'HEAD^', 'HEAD', '--', 'studio/demo-requests/'],
+              text=True,
+          ).splitlines()
+          names = [x for x in changed if re.fullmatch(r'studio/demo-requests/[a-z0-9][a-z0-9-]{0,70}\.json', x)]
+          if len(names) != 1 or len(changed) != 1:
+              raise SystemExit('Expected exactly one newly added public demo request JSON file')
+          p = pathlib.Path(names[0])
+          if p.stat().st_size > 1500:
+              raise SystemExit('Public request is too large')
+          b = json.loads(p.read_text(encoding='utf-8'))
+          if set(b) != {'title','goal','duration','aspect','public_demo'} or b['public_demo'] is not True:
+              raise SystemExit('Invalid or non-public brief')
+          title = b['title']
+          goal = b['goal']
+          duration = str(b['duration'])
+          aspect = b['aspect']
+          if not isinstance(title,str) or not re.fullmatch(r"[\w .,:!?()&\-_'/]{1,80}",title,flags=re.UNICODE):
+              raise SystemExit('Invalid public title')
+          if not isinstance(goal,str) or not goal.strip() or len(goal)>400 or '<' in goal or '>' in goal:
+              raise SystemExit('Invalid public goal')
+          if duration not in {'15','30','60','120','600'} or aspect not in {'landscape','portrait','square'}:
+              raise SystemExit('Invalid duration or aspect')
+          repo = os.environ['GITHUB_REPOSITORY']
+          subprocess.run([
+              'gh','workflow','run','film-studio-agents.yml','--repo',repo,
+              '--ref','studio-operator-phase2-20261022',
+              '-f','title='+title,'-f','goal='+goal,
+              '-f','duration='+duration,'-f','aspect='+aspect
+          ],check=True)
+          print('PASS: one approved public demo dispatched. Watch the Free CPU Film Studio - Eight Agent Team workflow.')
+          PY
