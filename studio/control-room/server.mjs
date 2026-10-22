@@ -1,11 +1,13 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
 import {createOperator} from './operator.mjs';
+import {validateProject,PRESETS,MAX_PLANNING_SECONDS,MAX_CPU_JOB_SECONDS,LICENSED_DEMO_ASSETS} from './studio-spec.mjs';
 
 const REPO = 'elijahmunzai-rgb/elijah-video-source-acquisition';
 const ACTIONS_URL = 'https://github.com/' + REPO + '/actions';
 const API_URL = 'https://api.github.com/repos/' + REPO + '/actions/runs?per_page=12';
 const html = await readFile(new URL('./index.html', import.meta.url), 'utf8');
+const studioHtml = await readFile(new URL('./studio.html', import.meta.url), 'utf8');
 
 function secure(res, type) {
   res.setHeader('Content-Type', type);
@@ -40,6 +42,31 @@ export function createServer({fetcher = fetch, cacheMs = 60_000, operatorEnv = p
   return http.createServer(async (req, res) => {
     const pathname = new URL(req.url || '/', 'http://localhost').pathname;
     if (await operator(req,res)) return;
+    if (pathname === '/api/studio/capabilities' && req.method === 'GET') {
+      json(res,200,{beta:true,presets:PRESETS,custom_min_seconds:5,custom_max_seconds:MAX_PLANNING_SECONDS,
+        single_cpu_job_max_seconds:MAX_CPU_JOB_SECONDS,media:LICENSED_DEMO_ASSETS,
+        public_demo_only:true,private_media_uploads:false,
+        render_is_six_second_preview:false,render_requires_separate_licensed_shots:true});
+      return;
+    }
+    if (pathname === '/api/studio/validate' && req.method === 'POST') {
+      // Stateless validation only. No media, secrets or project contents are stored.
+      if (!String(req.headers['content-type']||'').startsWith('application/json')) {
+        json(res,415,{error:'JSON body required'});return;
+      }
+      const origin=req.headers.origin;
+      if (origin) {
+        try {const u=new URL(origin);if(u.host!==req.headers.host){json(res,403,{error:'Cross-origin request forbidden'});return;}}
+        catch {json(res,403,{error:'Invalid origin'});return;}
+      }
+      try {
+        let body='',size=0;
+        for await (const part of req) {size+=part.length;if(size>120000)throw Error('Project exceeds 120KB');body+=part;}
+        const source=JSON.parse(body);
+        json(res,200,{plan:validateProject(source),render:validateProject(source,{render:true})});
+      } catch(e) {json(res,400,{error:String(e.message||'Invalid project').slice(0,130)});}
+      return;
+    }
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       json(res, 405, {error:'Read-only prototype; no job creation, publication or billing'});
       return;
@@ -47,6 +74,10 @@ export function createServer({fetcher = fetch, cacheMs = 60_000, operatorEnv = p
     if (pathname === '/healthz') {
       json(res, 200, {ok:true, dashboard:'staging-read-only', rendering:'external-github-actions'});
       return;
+    }
+    if (pathname === '/studio' || pathname === '/studio.html') {
+      res.statusCode=200;secure(res,'text/html; charset=utf-8');
+      res.end(req.method==='HEAD'?'':studioHtml);return;
     }
     if (pathname === '/' || pathname === '/index.html') {
       res.statusCode = 200;
