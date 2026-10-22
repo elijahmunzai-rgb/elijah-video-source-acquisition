@@ -194,4 +194,63 @@ async function loadFilmJobs(){
   }
  }catch(e){root.textContent='Render history unavailable. GitHub Actions remains the fallback.';}
 }
-recover();rebuild();loadFilmJobs();
+let storeConfig={authenticated:false,projects_enabled:false};
+async function fetchSession(){
+ try{
+  const r=await fetch('/api/session',{credentials:'same-origin',cache:'no-store'});
+  if(!r.ok)throw Error('Account session unavailable');
+  storeConfig=await r.json();
+  const enabled=!!(storeConfig.authenticated&&storeConfig.projects_enabled);
+  $('saveServer').disabled=!enabled;$('loadServer').disabled=!enabled;
+  if(!storeConfig.login_enabled){
+   $('storeStatus').textContent='Secure server projects locked: administrator password not configured on this web app. Local drafts still work.';
+  }else if(!storeConfig.authenticated){
+   $('storeStatus').textContent='Sign in from Control Room first. Project saving stays private and is never sent to public GitHub.';
+  }else if(!storeConfig.projects_enabled){
+   $('storeStatus').textContent='Site-only private project path STUDIO_PROJECT_DIR is not configured. Local drafts still work.';
+  }else{
+   $('storeStatus').textContent='Secure local-to-site private project storage is available. Media files are NOT uploaded.';
+   await loadProjectNames();
+  }
+ }catch{$('storeStatus').textContent='Secure project storage unavailable. Local browser saving/export still works.';}
+}
+async function loadProjectNames(){
+ const result=await fetch('/api/projects',{credentials:'same-origin',cache:'no-store'});
+ if(!result.ok)throw Error('Private project listing failed');
+ const data=await result.json(),sel=$('savedProjects');sel.replaceChildren();
+ const opt=node('option',null,'Select saved project');opt.value='';sel.append(opt);
+ for(const p of data.projects.slice(0,50)){
+  const o=node('option',null,(p.title||'Untitled')+' · '+formatTime(p.duration)+' · '+p.scene_count+' scenes');
+  o.value=p.id;sel.append(o);
+ }
+}
+$('saveServer').addEventListener('click',async()=>{
+ if(!storeConfig.authenticated||!storeConfig.projects_enabled)return;
+ capture();
+ const check=validateProject(project);
+ if(!check.ok){$('storeStatus').textContent='Fix scene timing before saving: '+check.errors.join('; ');return;}
+ const btn=$('saveServer');btn.disabled=true;
+ try{
+  const r=await fetch('/api/projects',{method:'POST',credentials:'same-origin',
+   headers:{'Content-Type':'application/json','X-Studio-Action':'1'},body:JSON.stringify(project)});
+  const j=await r.json();
+  if(!r.ok)throw Error(j.error||'Server project saving failed');
+  project.id=j.id;save();
+  $('storeStatus').textContent='Saved privately to this Studio server. NOTE: footage/audio files themselves are not yet uploaded.';
+  await loadProjectNames();$('savedProjects').value=j.id;
+ }catch(e){$('storeStatus').textContent='Save failed: '+errText(e);}
+ finally{btn.disabled=false;}
+});
+$('loadServer').addEventListener('click',async()=>{
+ const id=$('savedProjects').value;if(!id||!storeConfig.authenticated)return;
+ try{
+  const r=await fetch('/api/projects/'+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});
+  if(!r.ok)throw Error('Cannot open private project');
+  const d=await r.json(),v=validateProject(d.project);
+  if(!v.ok)throw Error(v.errors.join('; '));
+  if(!confirm('Open the selected stored project? Export your current local draft first if needed.'))return;
+  stop();project=d.project;save();rebuild();
+  $('storeStatus').textContent='Loaded private project metadata from server. Footage files still require a secure media upload service.';
+ }catch(e){$('storeStatus').textContent='Open failed: '+errText(e);}
+});
+recover();rebuild();loadFilmJobs();fetchSession();
