@@ -1,0 +1,71 @@
+name: Film Studio 318 / first original upstream video integration proof
+on:
+  push:
+    branches: [film-318-runtime-activation-20261022]
+    paths:
+      - 'studio/318-activation/integration/**'
+      - '.github/workflows/film-318-integration-geomotion.yml'
+permissions:
+  contents: read
+jobs:
+  licensed-vector-over-live-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install free code-first video engine and SVG renderer
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg librsvg2-bin
+      - name: Clone exact MIT motion engine and produce actual upstream animation source
+        run: |
+          git -c protocol.file.allow=never clone https://github.com/hacimertgokhan/geomotion.git /tmp/upstream-motion
+          cd /tmp/upstream-motion
+          git checkout --detach 88c1c1c4f8946309f961ef6e7983171da7a95d07
+          test "$(git rev-parse HEAD)" = 88c1c1c4f8946309f961ef6e7983171da7a95d07
+          grep -q MIT LICENSE
+          node --test test/core.test.js
+          node src/node/cli.js render sunrise --formats svg,lottie --out $GITHUB_WORKSPACE/motion-original
+      - name: Fetch exact individually Free-License stock scene as video backdrop
+        run: |
+          mkdir -p sourced-footage
+          curl -fL --retry 3 --max-time 120 -sS 'https://assets.mixkit.co/videos/4610/4610-1080.mp4' -o sourced-footage/stock-office.mp4
+          test "$(wc -c < sourced-footage/stock-office.mp4)" -gt 500000
+          ffprobe -v error -show_entries stream=width,height -of compact sourced-footage/stock-office.mp4
+      - name: Render a real source-video plus independently generated SVG overlay
+        run: |
+          mkdir -p integration-proof
+          svg="$(find motion-original -type f -name '*.svg' | head -1)"
+          json="$(find motion-original -type f -name '*.json' | head -1)"
+          test -s "$svg"
+          test -s "$json"
+          rsvg-convert -w 260 -h 260 -o integration-proof/original-upstream-motion.png "$svg"
+          test "$(wc -c < integration-proof/original-upstream-motion.png)" -gt 1000
+          ffmpeg -hide_banner -loglevel error -y -ss 0.8 -i sourced-footage/stock-office.mp4 \
+            -loop 1 -i integration-proof/original-upstream-motion.png \
+            -f lavfi -i 'sine=frequency=110:sample_rate=48000:duration=3' \
+            -filter_complex "[0:v]fps=24,scale=1280:720:force_original_aspect_ratio=increase,crop=1280:720,format=yuv420p[footage];[1:v]format=rgba,colorchannelmixer=aa=0.22[art];[footage][art]overlay=W-w-24:H-h-24:shortest=1,format=yuv420p[v]" \
+            -map '[v]' -map 2:a:0 -t 3 -r 24 -c:v libx264 -preset fast -crf 19 -c:a aac -b:a 128k -movflags +faststart integration-proof/geomotion-into-real-footage-3s.mp4
+          ffprobe -v error -show_entries stream=codec_name,width,height -show_entries format=duration,size -of json integration-proof/geomotion-into-real-footage-3s.mp4 | tee integration-proof/ffprobe.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          j=json.loads(Path('integration-proof/ffprobe.json').read_text())
+          v=next(x for x in j['streams'] if x['codec_name']=='h264')
+          a=next(x for x in j['streams'] if x['codec_name']=='aac')
+          assert v['width']==1280 and v['height']==720
+          assert abs(float(j['format']['duration'])-3)<0.1
+          assert Path('integration-proof/geomotion-into-real-footage-3s.mp4').stat().st_size>150000
+          print('PASS: actual geomotion SVG composed over real recorded footage, AAC/H264 file produced. NOT cinematic quality approved.')
+          PY
+      - name: Preserve only derivative/QA files, no raw stock footage
+        uses: actions/upload-artifact@v4
+        with:
+          name: first-318-upstream-real-media-integration-proof
+          path: integration-proof/
+          retention-days: 7
