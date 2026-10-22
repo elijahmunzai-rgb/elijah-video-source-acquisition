@@ -1,0 +1,56 @@
+name: Film Studio original real-footage cinematic quality proof
+on:
+  push:
+    branches: [film-real-footage-hook-v1-20261022]
+    paths:
+      - 'studio/cinematic_hook/**'
+      - '.github/workflows/film-real-footage-proof.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  free-cpu-cinematic-hook:
+    if: github.repository == 'elijahmunzai-rgb/elijah-video-source-acquisition'
+    runs-on: ubuntu-latest
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Prepare free CPU film production dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg fonts-dejavu-core
+          python -m pip install 'numpy>=1.24,<3' 'Pillow>=10,<12'
+          ffmpeg -version | head -1
+      - name: Acquire two individually rights-identified Mixkit FREE-LICENSE call-center clips
+        run: |
+          set -euo pipefail
+          mkdir -p studio/cinematic_hook/sources
+          curl -fL --retry 3 --retry-delay 3 --max-time 120 -sS \
+            'https://assets.mixkit.co/videos/4610/4610-1080.mp4' \
+            -o studio/cinematic_hook/sources/office_call_center_4610.mp4
+          curl -fL --retry 3 --retry-delay 3 --max-time 120 -sS \
+            'https://assets.mixkit.co/videos/4603/4603-1080.mp4' \
+            -o studio/cinematic_hook/sources/office_call_center_4603.mp4
+          for f in studio/cinematic_hook/sources/*.mp4; do
+            echo "SOURCE: $f bytes=$(wc -c < "$f") sha256=$(sha256sum "$f" | cut -d ' ' -f1)"
+            ffprobe -v error -show_entries stream=width,height,codec_name -of compact "$f"
+          done
+      - name: Render genuine-recorded-human stock footage with scene change and original soundtrack
+        run: |
+          python studio/cinematic_hook/render_hook.py cinematic-hook-artifact
+          ffprobe -hide_banner -v error -show_entries format=duration,size,bit_rate -show_entries stream=codec_name,width,height,r_frame_rate -of json cinematic-hook-artifact/film-studio-real-footage-hook-6s.mp4
+      - name: Collect only redistributable derivative, attribution/rights metadata and quality frames
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: REAL-FOOTAGE-6S-FILM-STUDIO-CREATIVE-REVIEW
+          path: |
+            cinematic-hook-artifact/film-studio-real-footage-hook-6s.mp4
+            cinematic-hook-artifact/SOURCE_AND_LICENSE_LEDGER.json
+            cinematic-hook-artifact/TECHNICAL_AND_CREATIVE_REVIEW.json
+            cinematic-hook-artifact/frame-*.jpg
+          if-no-files-found: warn
+          retention-days: 7
