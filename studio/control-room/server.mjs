@@ -1,5 +1,6 @@
 import http from 'node:http';
 import {readFile} from 'node:fs/promises';
+import {createOperator} from './operator.mjs';
 
 const REPO = 'elijahmunzai-rgb/elijah-video-source-acquisition';
 const ACTIONS_URL = 'https://github.com/' + REPO + '/actions';
@@ -32,11 +33,13 @@ function sanitizeRun(run) {
       ? run.html_url : null
   };
 }
-export function createServer({fetcher = fetch, cacheMs = 60_000} = {}) {
+export function createServer({fetcher = fetch, cacheMs = 60_000, operatorEnv = process.env, clock = Date.now} = {}) {
+  const operator = createOperator({fetcher, env:operatorEnv, now:clock});
   let cached = null;
   let expires = 0;
   return http.createServer(async (req, res) => {
     const pathname = new URL(req.url || '/', 'http://localhost').pathname;
+    if (await operator(req,res)) return;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       json(res, 405, {error:'Read-only prototype; no job creation, publication or billing'});
       return;
