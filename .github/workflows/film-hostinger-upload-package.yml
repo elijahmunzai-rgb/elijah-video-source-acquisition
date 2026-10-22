@@ -31,7 +31,7 @@ jobs:
           cd ../..
           test "$(unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip | wc -l)" -eq 8
           unzip -Z1 release/Elijah-Film-Studio-Full-Duration-Staging.zip
-          sha256sum release/*.zip > release/SHA256SUMS.txt
+          (cd release && sha256sum *.zip > SHA256SUMS.txt)
           echo "No paid service, no runtime secrets, and no customer footage in this artifact."
       - name: Export Hostinger upload-ready ZIP
         uses: actions/upload-artifact@v4
