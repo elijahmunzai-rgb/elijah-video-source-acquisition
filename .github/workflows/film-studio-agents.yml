@@ -50,7 +50,9 @@ jobs:
         with:
           python-version: '3.12'
       - name: Test eight agents, source-rights gate and deterministic output
-        run: python -m unittest discover -s studio/tests -p test_film_agents.py -v
+        run: |
+          python -m unittest discover -s studio/tests -p test_film_agents.py -v
+          python -m unittest discover -s studio/tests -p test_premium_preview.py -v
       - name: Produce shot plan, storyboard, camera, audio, release QA handoffs
         run: |
           python studio/agents/pipeline.py --title "$PUBLIC_TITLE" \
