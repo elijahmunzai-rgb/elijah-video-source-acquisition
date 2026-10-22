@@ -20,6 +20,20 @@ jobs:
       - name: Test secure read-only control room
         working-directory: studio/control-room
         run: npm test
+      - name: Parse production dashboard inline JavaScript
+        working-directory: studio/control-room
+        run: |
+          node --input-type=module - <<'NODE'
+          import fs from 'node:fs';
+          import vm from 'node:vm';
+          const html=fs.readFileSync('index.html','utf8');
+          const scripts=[...html.matchAll(/<script>([\\s\\S]*?)<\\/script>/g)];
+          if(scripts.length!==1)throw new Error('Expected exactly one inline dashboard script');
+          for(const s of scripts)new vm.Script(s[1]);
+          for(const marker of ['operBrief','operRefresh','operVideo','operSignIn'])
+            if(!html.includes('id="'+marker+'"'))throw new Error('Missing operator control: '+marker);
+          console.log('PASS: dashboard JS parses and operator controls present');
+          NODE
       - name: Verify server can start without credentials
         working-directory: studio/control-room
         run: |
