@@ -29,3 +29,12 @@ jobs:
           curl --fail --silent http://127.0.0.1:3081/healthz
           curl --fail --silent http://127.0.0.1:3081/ | grep -q 'ELIJAH FILM STUDIO'
           kill "$pid"
+      - name: Verify Hostinger import-mode startup
+        working-directory: studio/control-room
+        run: |
+          PORT=3082 node --input-type=module -e "import('./server.mjs')" > /tmp/studio-hostinger-import.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          sleep 2
+          curl --fail --silent http://127.0.0.1:3082/healthz
+          cat /tmp/studio-hostinger-import.log
