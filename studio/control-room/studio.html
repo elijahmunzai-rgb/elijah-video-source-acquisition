@@ -155,7 +155,7 @@ $('render').onclick=async()=>{
  await refreshJobs();
  }catch(e){$('renderState').textContent='Render request rejected: '+e.message;}
 };
-async function refreshJobs(){try{const d=await jsonResponse('/api/jobs');$('jobs').replaceChildren();if(!d.jobs?.length){$('jobs').textContent='No public demo jobs yet.';return;}
+async function refreshJobs(){try{const d=await jsonResponse('/api/studio/jobs');$('jobs').replaceChildren();if(!d.jobs?.length){$('jobs').textContent='No public demo jobs yet.';return;}
  for(const j of d.jobs.slice(0,8)){const div=document.createElement('div');div.className='job';const a=document.createElement('a');a.href=j.url;a.target='_blank';a.rel='noopener';a.textContent=(j.name||'Production job')+' #'+j.id;div.append(a);const s=document.createElement('div');s.textContent=(j.status||'unknown')+' · '+(j.conclusion||'pending');div.append(s);$('jobs').append(div);}
  }catch(e){$('jobs').textContent='Job history unavailable: '+e.message;}}
 $('reloadJobs').onclick=refreshJobs;
